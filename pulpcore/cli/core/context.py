@@ -5,7 +5,7 @@ import sys
 import click
 
 from pulpcore.cli.common.context import (
-    EntityData,
+    EntityDefinition,
     PulpContext,
     PulpEntityContext,
 )
@@ -80,7 +80,7 @@ class PulpExportContext(PulpEntityContext):
     READ_ID = "exporters_core_pulp_exports_read"
     CREATE_ID = "exporters_core_pulp_exports_create"
     DELETE_ID = "exporters_core_pulp_exports_delete"
-    exporter: EntityData
+    exporter: EntityDefinition
 
     def __new__(cls, pulp_ctx: PulpContext) -> Any:
         if not pulp_ctx.has_plugin("pulpcore", min_version="3.10.dev0"):
@@ -94,7 +94,7 @@ class PulpExportContext(PulpEntityContext):
                     return super().list(limit=limit, offset=offset, parameters=parameters)
 
                 def create(
-                    self, body: EntityData, parameters: Optional[Dict[str, Any]] = None
+                    self, body: EntityDefinition, parameters: Optional[Dict[str, Any]] = None
                 ) -> Any:
                     if parameters is None:
                         parameters = {}
@@ -111,7 +111,6 @@ class PulpExportContext(PulpEntityContext):
     @property
     def scope(self) -> Dict[str, Any]:
         return {PulpExporterContext.HREF: self.exporter["pulp_href"]}
-
 
 
 class PulpGroupContext(PulpEntityContext):
@@ -135,6 +134,45 @@ class PulpGroupContext(PulpEntityContext):
         if len(search_result) != 1:
             raise click.ClickException(f"Could not find {self.ENTITY} with {kwargs}.")
         return search_result[0]
+
+
+class PulpGroupUserContext(PulpEntityContext):
+    ENTITY = "group user"
+    HREF = "auth_groups_user_href"
+    LIST_ID = "groups_users_list"
+    CREATE_ID = "groups_users_create"
+    DELETE_ID = "groups_users_delete"
+    group: EntityDefinition
+
+    def __new__(cls, pulp_ctx: PulpContext) -> Any:
+        if not pulp_ctx.has_plugin("pulpcore", min_version="3.10.dev0"):
+            # Workaround for improperly rendered nested resource paths and weird HREF names
+            # https://github.com/pulp/pulpcore/pull/1066
+            class PatchedPulpGroupUserContext(PulpGroupUserContext):
+                HREF = "auth_auth_groups_user_href"
+
+                def list(self, limit: int, offset: int, parameters: Dict[str, Any]) -> List[Any]:
+                    parameters[PulpGroupContext.HREF] = self.group["pulp_href"]
+                    return super().list(limit=limit, offset=offset, parameters=parameters)
+
+                def create(
+                    self, body: EntityDefinition, parameters: Optional[Dict[str, Any]] = None
+                ) -> Any:
+                    if parameters is None:
+                        parameters = {}
+                    parameters[self.HREF] = self.group["pulp_href"]
+                    return super().create(parameters=parameters, body=body)
+
+                @property
+                def scope(self) -> Dict[str, Any]:
+                    return {}
+
+            return super().__new__(PatchedPulpGroupUserContext)
+        return super().__new__(cls)
+
+    @property
+    def scope(self) -> Dict[str, Any]:
+        return {PulpGroupContext.HREF: self.group["pulp_href"]}
 
 
 class PulpImporterContext(PulpEntityContext):
