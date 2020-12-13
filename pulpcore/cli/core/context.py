@@ -1,4 +1,4 @@
-from typing import Any, ClassVar, Dict, List, IO, Optional
+from typing import Any, ClassVar, Dict, IO, List, Optional
 import hashlib
 import os
 import sys
@@ -134,6 +134,40 @@ class PulpGroupContext(PulpEntityContext):
         if len(search_result) != 1:
             raise click.ClickException(f"Could not find {self.ENTITY} with {kwargs}.")
         return search_result[0]
+
+
+class PulpGroupPermissionContext(PulpEntityContext):
+    ENTITY = "group permission"
+    group: EntityDefinition
+
+    def __init__(self, pulp_ctx: PulpContext) -> None:
+        if not pulp_ctx.has_plugin("pulpcore", min_version="3.10.dev0"):
+            raise click.ClickException(
+                "'pulpcore' >= 3.10 is required to work with group permissions."
+            )
+        super().__init__(pulp_ctx)
+
+    @property
+    def scope(self) -> Dict[str, Any]:
+        return {PulpGroupContext.HREF: self.group["pulp_href"]}
+
+
+class PulpGroupModelPermissionContext(PulpGroupPermissionContext):
+    ENTITY = "group model permission"
+    HREF = "auth_groups_model_permission_href"
+    LIST_ID = "groups_model_permissions_list"
+    READ_ID = "groups_model_permissions_read"
+    CREATE_ID = "groups_model_permissions_create"
+    DELETE_ID = "groups_model_permissions_delete"
+
+
+class PulpGroupObjectPermissionContext(PulpGroupPermissionContext):
+    ENTITY = "group object permission"
+    HREF = "auth_groups_object_permission_href"
+    LIST_ID = "groups_object_permissions_list"
+    READ_ID = "groups_object_permissions_read"
+    CREATE_ID = "groups_object_permissions_create"
+    DELETE_ID = "groups_object_permissions_delete"
 
 
 class PulpGroupUserContext(PulpEntityContext):
