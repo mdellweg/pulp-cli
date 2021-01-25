@@ -165,6 +165,28 @@ def show_command(**kwargs: Any) -> click.Command:
     return callback
 
 
+def create_command(**kwargs: Any) -> click.Command:
+    """A factory that creates a create command."""
+
+    if "cls" not in kwargs:
+        kwargs["cls"] = PulpCommand
+    if "name" not in kwargs:
+        kwargs["name"] = "create"
+    decorators = kwargs.pop("decorators", [])
+
+    @click.command(**kwargs)
+    @pass_entity_context
+    @pass_pulp_context
+    def callback(pulp_ctx: PulpContext, entity_ctx: PulpEntityContext, **kwargs: Any) -> None:
+        result = entity_ctx.create(body=kwargs)
+        pulp_ctx.output_result(result)
+
+    for option in decorators:
+        # Decorate callback
+        callback = option(callback)
+    return callback
+
+
 def destroy_command(**kwargs: Any) -> click.Command:
     """A factory that creates a destroy command."""
 
