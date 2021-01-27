@@ -15,4 +15,10 @@ expect_succ pulp file repository update --name "cli_test_file_repo" --descriptio
 expect_succ pulp file repository show --name "cli_test_file_repo"
 test "$(echo "$OUTPUT" | jq -r '.description')" = "null"
 expect_succ pulp file repository list
+test "$(echo "$OUTPUT" | jq -r '.|length')" != "0"
+if pulp has-plugin --name "pulpcore" --min-version "3.10.dev"
+then
+  expect_succ pulp repository list
+  test "$(echo "$OUTPUT" | jq -r '.|length')" != "0"
+fi
 expect_succ pulp file repository destroy --name "cli_test_file_repo"

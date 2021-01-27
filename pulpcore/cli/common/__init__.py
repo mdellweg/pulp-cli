@@ -1,11 +1,12 @@
 import os
+import sys
 from typing import Any, Optional
 
 import click
 import pkg_resources
 import toml
 
-from pulpcore.cli.common.context import PulpContext
+from pulpcore.cli.common.context import PulpContext, pass_pulp_context
 
 __version__ = "0.2.1.dev"
 
@@ -90,6 +91,17 @@ def main(
         debug_callback=_debug_callback,
     )
     ctx.obj = PulpContext(api_kwargs=api_kwargs, format=format, background_tasks=background)
+
+
+@main.command()
+@click.option("--name", required=True)
+@click.option("--min-version")
+@click.option("--max-version")
+@pass_pulp_context
+def has_plugin(pulp_ctx: PulpContext, name: str, min_version: str, max_version: str) -> None:
+    available = pulp_ctx.has_plugin(name, min_version, max_version)
+    pulp_ctx.output_result(available)
+    sys.exit(0 if available else 1)
 
 
 ##############################################################################
