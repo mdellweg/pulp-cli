@@ -8,6 +8,7 @@ from pulpcore.cli.common.generic import (
     list_command,
     name_option,
     show_command,
+    update_command,
 )
 from pulpcore.cli.file.context import PulpFileRemoteContext
 
@@ -30,8 +31,46 @@ def remote(ctx: click.Context, pulp_ctx: PulpContext, remote_type: str) -> None:
 
 
 lookup_options = [href_option, name_option]
+create_options = [
+    click.option("--name", required=True),
+    click.option("--url", required=True),
+    click.option("--ca-cert"),
+    click.option("--client-cert"),
+    click.option("--client-key"),
+    click.option("--connect-timeout", type=float),
+    click.option("--download-concurrency", type=int),
+    click.option("--password"),
+    click.option(
+        "--policy", type=click.Choice(["immediate", "on_demand", "streamed"], case_sensitive=False)
+    ),
+    click.option("--proxy-url"),
+    click.option("--sock-connect-timeout", type=float),
+    click.option("--sock-read-timeout", type=float),
+    click.option("--tls-validation", type=bool),
+    click.option("--total-timeout", type=float),
+    click.option("--username"),
+]
+update_options = [
+    click.option("--url"),
+    click.option("--ca-cert"),
+    click.option("--client-cert"),
+    click.option("--client-key"),
+    click.option("--connect-timeout", type=float),
+    click.option("--download-concurrency", type=int),
+    click.option("--password"),
+    click.option(
+        "--policy", type=click.Choice(["immediate", "on_demand", "streamed"], case_sensitive=False)
+    ),
+    click.option("--proxy-url"),
+    click.option("--sock-connect-timeout", type=float),
+    click.option("--sock-read-timeout", type=float),
+    click.option("--tls-validation", type=bool),
+    click.option("--total-timeout", type=float),
+    click.option("--username"),
+]
 
 remote.add_command(list_command())
 remote.add_command(show_command(decorators=lookup_options))
-remote.add_command(create_command(decorators=[click.option("--name", required=True), click.option("--url", required=True)]))
+remote.add_command(create_command(decorators=create_options))
+remote.add_command(update_command(decorators=lookup_options + update_options))
 remote.add_command(destroy_command(decorators=lookup_options))

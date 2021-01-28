@@ -91,8 +91,7 @@ def update(
         if description == "":
             # unset the description
             description = None
-        if description != repository["description"]:
-            repository["description"] = description
+        repository["description"] = description
 
     if remote is not None:
         if remote == "":

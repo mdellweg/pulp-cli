@@ -178,8 +178,39 @@ def create_command(**kwargs: Any) -> click.Command:
     @pass_entity_context
     @pass_pulp_context
     def callback(pulp_ctx: PulpContext, entity_ctx: PulpEntityContext, **kwargs: Any) -> None:
-        result = entity_ctx.create(body=kwargs)
+        body = {
+            key: None if value == "" else value
+            for key, value in kwargs.items()
+            if value is not None
+        }
+        result = entity_ctx.create(body=body)
         pulp_ctx.output_result(result)
+
+    for option in decorators:
+        # Decorate callback
+        callback = option(callback)
+    return callback
+
+
+def update_command(**kwargs: Any) -> click.Command:
+    """A factory that creates an update command."""
+
+    if "cls" not in kwargs:
+        kwargs["cls"] = PulpCommand
+    if "name" not in kwargs:
+        kwargs["name"] = "update"
+    decorators = kwargs.pop("decorators", [])
+
+    @click.command(**kwargs)
+    @pass_entity_context
+    @pass_pulp_context
+    def callback(pulp_ctx: PulpContext, entity_ctx: PulpEntityContext, **kwargs: Any) -> None:
+        body = {
+            key: None if value == "" else value
+            for key, value in kwargs.items()
+            if value is not None
+        }
+        result = entity_ctx.update(href=entity_ctx.pulp_href, body=body)
 
     for option in decorators:
         # Decorate callback
