@@ -4,8 +4,8 @@
 . "$(dirname "$(realpath "$0")")/config.source"
 
 cleanup() {
-  rm test_1.txt test_2.txt test_3.txt
-  rm add_content.json remove_content.json
+  rm test_1.txt test_2.txt test_3.txt || true
+  rm add_content.json remove_content.json || true
   pulp file repository destroy --name "cli_test_file_repository" || true
   pulp orphans delete || true
 }
