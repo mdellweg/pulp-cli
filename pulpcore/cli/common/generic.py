@@ -40,21 +40,27 @@ class PulpOption(click.Option):
 # Option callbacks
 
 
-def _href_callback(ctx: click.Context, param: click.Parameter, value: str) -> str:
+def _href_callback(
+    ctx: click.Context, param: click.Parameter, value: Optional[str]
+) -> Optional[str]:
     if value is not None:
         entity_ctx: PulpEntityContext = ctx.find_object(PulpEntityContext)
         entity_ctx.pulp_href = value
     return value
 
 
-def _name_callback(ctx: click.Context, param: click.Parameter, value: str) -> str:
+def _name_callback(
+    ctx: click.Context, param: click.Parameter, value: Optional[str]
+) -> Optional[str]:
     if value is not None:
         entity_ctx: PulpEntityContext = ctx.find_object(PulpEntityContext)
         entity_ctx.entity = {"name": value}
     return value
 
 
-def _version_callback(ctx: click.Context, param: click.Parameter, value: int) -> int:
+def _version_callback(
+    ctx: click.Context, param: click.Parameter, value: Optional[int]
+) -> Optional[int]:
     entity_ctx: PulpEntityContext = ctx.find_object(PulpEntityContext)
     repository_ctx: PulpRepositoryContext = ctx.find_object(PulpRepositoryContext)
     if value is not None:
@@ -210,7 +216,7 @@ def update_command(**kwargs: Any) -> click.Command:
             for key, value in kwargs.items()
             if value is not None
         }
-        result = entity_ctx.update(href=entity_ctx.pulp_href, body=body)
+        entity_ctx.update(href=entity_ctx.pulp_href, body=body)
 
     for option in decorators:
         # Decorate callback

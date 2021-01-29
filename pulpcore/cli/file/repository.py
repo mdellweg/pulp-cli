@@ -10,6 +10,7 @@ from pulpcore.cli.common.context import (
     pass_repository_context,
 )
 from pulpcore.cli.common.generic import (
+    create_command,
     destroy_command,
     href_option,
     list_command,
@@ -22,6 +23,16 @@ from pulpcore.cli.file.context import (
     PulpFileRemoteContext,
     PulpFileRepositoryContext,
 )
+
+
+def _remote_callback(
+    ctx: click.Context, param: click.Parameter, value: Optional[str]
+) -> Optional[str]:
+    # Pass None and "" verbatim
+    if value:
+        pulp_ctx: PulpContext = ctx.find_object(PulpContext)
+        return PulpFileRemoteContext(pulp_ctx, entity={"name": value}).pulp_href
+    return value
 
 
 @click.group()
@@ -42,40 +53,24 @@ def repository(ctx: click.Context, pulp_ctx: PulpContext, repo_type: str) -> Non
 
 
 lookup_options = [href_option, name_option]
+create_options = [
+    click.option("--name", required=True),
+    click.option("--description"),
+    click.option("--remote", callback=_remote_callback),
+]
 
 repository.add_command(list_command())
+repository.add_command(create_command(decorators=create_options))
 repository.add_command(show_command(decorators=lookup_options))
 repository.add_command(destroy_command(decorators=lookup_options))
 repository.add_command(version_command())
 
 
 @repository.command()
-@click.option("--name", required=True)
-@click.option("--description")
-@click.option("--remote")
-@pass_repository_context
-@pass_pulp_context
-def create(
-    pulp_ctx: PulpContext,
-    repository_ctx: PulpRepositoryContext,
-    name: str,
-    description: Optional[str],
-    remote: Optional[str],
-) -> None:
-    repository = {"name": name, "description": description}
-    if remote:
-        remote_href: str = PulpFileRemoteContext(pulp_ctx, entity={"name": remote}).pulp_href
-        repository["remote"] = remote_href
-
-    result = repository_ctx.create(body=repository)
-    pulp_ctx.output_result(result)
-
-
-@repository.command()
 @name_option
 @href_option
 @click.option("--description")
-@click.option("--remote")
+@click.option("--remote", callback=_remote_callback)
 @pass_repository_context
 @pass_pulp_context
 def update(
@@ -94,12 +89,7 @@ def update(
         repository["description"] = description
 
     if remote is not None:
-        if remote == "":
-            # unset the remote
-            repository["remote"] = ""
-        elif remote:
-            remote_href: str = PulpFileRemoteContext(pulp_ctx, entity={"name": remote}).pulp_href
-            repository["remote"] = remote_href
+        repository["remote"] = remote
 
     repository_ctx.update(repository_href, body=repository)
 
@@ -107,7 +97,7 @@ def update(
 @repository.command()
 @name_option
 @href_option
-@click.option("--remote")
+@click.option("--remote", callback=_remote_callback)
 @pass_repository_context
 @pass_pulp_context
 def sync(
@@ -121,8 +111,7 @@ def sync(
     body = {}
 
     if remote:
-        remote_href: str = PulpFileRemoteContext(pulp_ctx).find(name=remote)["pulp_href"]
-        body["remote"] = remote_href
+        body["remote"] = remote
     elif repository["remote"] is None:
         name = repository["name"]
         raise click.ClickException(
@@ -238,7 +227,6 @@ def _load_json_from_option(
     "--add-content",
     default="[]",
     callback=_load_json_from_option,
-    is_eager=True,
     expose_value=True,
     help="""JSON string with a list of objects to add to the repository.
     Each object should consist of the following keys: "sha256", "relative_path"..
@@ -248,7 +236,6 @@ def _load_json_from_option(
     "--remove-content",
     default="[]",
     callback=_load_json_from_option,
-    is_eager=True,
     expose_value=True,
     help="""JSON string with a list of objects to remove from the repository.
     Each object should consist of the following keys: "sha256", "relative_path"..
