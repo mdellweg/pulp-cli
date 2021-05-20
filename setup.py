@@ -1,9 +1,12 @@
-from setuptools import find_namespace_packages, setup
+from setuptools import find_packages, setup
 
-plugin_packages = find_namespace_packages(include=["pulpcore.cli.*"])
-packages = plugin_packages + ["pytest_pulp_cli"]
-plugin_packages.remove("pulpcore.cli.common")
-plugin_entry_points = [(package.rsplit(".", 1)[-1], package) for package in plugin_packages]
+# Old versions of setuptools do not provide `find_namespace_packages`
+# see https://github.com/pulp/pulp-cli/issues/248
+# packages = find_namespace_packages(include=["pulpcore.cli.*"]) + ["pytest_pulp_cli"]
+plugins = find_packages(where="pulpcore/cli")
+packages = [f"pulpcore.cli.{plugin}" for plugin in plugins] + ["pulp_cli", "pytest_pulp_cli"]
+plugins.remove("common")
+plugin_entry_points = [plugin, f"pulpcore.cli.{plugin}" for plugin in plugins]
 
 long_description = ""
 with open("README.md") as readme:
@@ -35,7 +38,7 @@ setup(
         "shell": ["click-shell~=2.1"],
     },
     entry_points={
-        "console_scripts": ["pulp=pulpcore.cli.common:main"],
+        "console_scripts": ["pulp=pulp_cli:main"],
         "pulp_cli.plugins": [f"{name}={module}" for name, module in plugin_entry_points],
     },
     license="GPLv2+",
