@@ -6,7 +6,7 @@ from setuptools import find_packages, setup
 plugins = find_packages(where="pulpcore/cli")
 packages = [f"pulpcore.cli.{plugin}" for plugin in plugins] + ["pulp_cli", "pytest_pulp_cli"]
 plugins.remove("common")
-plugin_entry_points = [plugin, f"pulpcore.cli.{plugin}" for plugin in plugins]
+plugin_entry_points = [(plugin, f"pulpcore.cli.{plugin}") for plugin in plugins]
 
 long_description = ""
 with open("README.md") as readme:
@@ -24,7 +24,7 @@ setup(
     url="https://github.com/pulp/pulp-cli",
     version="0.10.0.dev",
     packages=packages,
-    package_data={package: ["py.typed"] for package in plugin_packages},
+    package_data={package: ["py.typed"] for package in plugins},
     python_requires=">=3.6",
     install_requires=[
         "click~=8.0.1",
