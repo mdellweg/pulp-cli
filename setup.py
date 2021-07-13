@@ -27,7 +27,7 @@ setup(
         "click~=8.0.1",
         "packaging",
         "PyYAML~=5.4.1",
-        "requests~=2.25.1",
+        "requests>=2.25.1,<2.27.0",
         "toml==0.10.2",
     ],
     extras_require={
