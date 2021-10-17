@@ -32,6 +32,13 @@ from pulp_glue.common.i18n import get_translation
 from pulp_glue.common.openapi import AuthProviderBase
 
 try:
+    from prettytable import PrettyTable
+except ImportError:
+    PRETTYTABLE_INSTALLD = False
+else:
+    PRETTYTABLE_INSTALLD = True
+
+try:
     from pygments import highlight
     from pygments.formatters import Terminal256Formatter
     from pygments.lexers import JsonLexer, YamlLexer
@@ -106,6 +113,24 @@ REGISTERED_OUTPUT_FORMATTERS = {
     "json": _json_formatter,
     "yaml": _yaml_formatter,
 }
+
+if PRETTYTABLE_INSTALLD:
+
+    def _table_formatter(result: t.Any) -> str:
+        try:
+            table = PrettyTable()
+            if isinstance(result, dict):
+                # For single results, fake a list with one element
+                result = [result]
+            keys = list(result[0].keys())
+            table.field_names = keys
+            table.add_rows(([row[key] for key in keys] for row in result))
+            output = table.get_string()
+        except (KeyError, ValueError):
+            raise click.ClickException(_("Output cannot be represented in a table."))
+        return output
+
+    REGISTERED_OUTPUT_FORMATTERS["table"] = _table_formatter
 
 
 class PulpCLIContext(PulpContext):
