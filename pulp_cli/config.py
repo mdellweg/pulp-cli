@@ -69,7 +69,7 @@ CONFIG_OPTIONS = [
     click.option(
         "--format",
         type=click.Choice(FORMAT_CHOICES, case_sensitive=False),
-        default="json",
+        default=FORMAT_CHOICES[0],
         help=_("Format of the response"),
     ),
     click.option(
