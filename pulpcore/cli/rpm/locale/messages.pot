@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-12-06 11:10+0100\n"
+"POT-Creation-Date: 2022-02-16 13:32+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -51,33 +51,45 @@ msgstr ""
 msgid "rpm ACSes"
 msgstr ""
 
-#: pulpcore/cli/rpm/context.py:45
+#: pulpcore/cli/rpm/context.py:40
 #, python-brace-format
 msgid "Uploading file {filename}"
 msgstr ""
 
-#: pulpcore/cli/rpm/context.py:55
+#: pulpcore/cli/rpm/context.py:50
 msgid "rpm distribution"
 msgstr ""
 
-#: pulpcore/cli/rpm/context.py:56
+#: pulpcore/cli/rpm/context.py:51
 msgid "rpm distributions"
 msgstr ""
 
-#: pulpcore/cli/rpm/context.py:76
+#: pulpcore/cli/rpm/context.py:74
 msgid "rpm publication"
 msgstr ""
 
-#: pulpcore/cli/rpm/context.py:77
+#: pulpcore/cli/rpm/context.py:75
 msgid "rpm publications"
 msgstr ""
 
-#: pulpcore/cli/rpm/context.py:94
+#: pulpcore/cli/rpm/context.py:89
 msgid "rpm remote"
 msgstr ""
 
-#: pulpcore/cli/rpm/context.py:95
+#: pulpcore/cli/rpm/context.py:90
 msgid "rpm remotes"
+msgstr ""
+
+#: pulpcore/cli/rpm/distribution.py:30
+msgid ""
+"Repository to be used for auto-distributing. When set, this will unset the "
+"'publication'. Specified as '[[<plugin>:]<type>:]<name>' or as href."
+msgstr ""
+
+#: pulpcore/cli/rpm/distribution.py:61
+msgid ""
+"Publication to be served. This will unset the 'repository' and disable auto-"
+"distribute."
 msgstr ""
 
 #: pulpcore/cli/rpm/publication.py:46

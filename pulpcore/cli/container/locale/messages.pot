@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-06 20:29+0100\n"
+"POT-Creation-Date: 2022-02-16 13:32+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,55 +17,101 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: pulpcore/cli/container/context.py:17
-msgid "container namespace"
+#: pulpcore/cli/container/content.py:63 pulpcore/cli/container/content.py:70
+#, python-brace-format
+msgid "Digest associated with {entity}"
 msgstr ""
 
-#: pulpcore/cli/container/context.py:18
-msgid "container namespaces"
+#: pulpcore/cli/container/content.py:81
+#, python-brace-format
+msgid "Name of {entity}"
+msgstr ""
+
+#: pulpcore/cli/container/context.py:20
+msgid "container blob"
+msgstr ""
+
+#: pulpcore/cli/container/context.py:21
+msgid "container blobs"
 msgstr ""
 
 #: pulpcore/cli/container/context.py:27
-msgid "container distribution"
+msgid "container manifest"
 msgstr ""
 
 #: pulpcore/cli/container/context.py:28
+msgid "container manifests"
+msgstr ""
+
+#: pulpcore/cli/container/context.py:34
+msgid "container tag"
+msgstr ""
+
+#: pulpcore/cli/container/context.py:35
+msgid "container tags"
+msgstr ""
+
+#: pulpcore/cli/container/context.py:41
+msgid "container namespace"
+msgstr ""
+
+#: pulpcore/cli/container/context.py:42
+msgid "container namespaces"
+msgstr ""
+
+#: pulpcore/cli/container/context.py:48
+msgid "container distribution"
+msgstr ""
+
+#: pulpcore/cli/container/context.py:49
 msgid "container distributions"
 msgstr ""
 
-#: pulpcore/cli/container/context.py:46
+#: pulpcore/cli/container/context.py:64
 msgid "container remote"
 msgstr ""
 
-#: pulpcore/cli/container/context.py:47
+#: pulpcore/cli/container/context.py:65
 msgid "container remotes"
 msgstr ""
 
 #: pulpcore/cli/container/distribution.py:71
-#: pulpcore/cli/container/distribution.py:87
+#: pulpcore/cli/container/distribution.py:88
 msgid "a repository version number, leave blank for latest"
 msgstr ""
 
-#: pulpcore/cli/container/distribution.py:133
+#: pulpcore/cli/container/distribution.py:138
 #, python-brace-format
 msgid ""
 "Distribution {distribution} doesn't have a repository set, please specify "
 "the repository to use  with --repository"
 msgstr ""
 
-#: pulpcore/cli/container/repository.py:49
+#: pulpcore/cli/container/repository.py:61
 msgid ""
 "Remote used for synching in the form '[[<plugin>:]<resource_type>:]<name>' "
 "or by href."
 msgstr ""
 
-#: pulpcore/cli/container/repository.py:102
+#: pulpcore/cli/container/repository.py:116
 msgid "Repository type does not support sync."
 msgstr ""
 
-#: pulpcore/cli/container/repository.py:114
+#: pulpcore/cli/container/repository.py:128
 #, python-brace-format
 msgid ""
 "Repository '{name}' does not have a default remote. Please specify with '--"
 "remote'."
+msgstr ""
+
+#: pulpcore/cli/container/repository.py:142
+msgid "Name to tag an image with"
+msgstr ""
+
+#: pulpcore/cli/container/repository.py:143
+msgid "SHA256 digest of the Manifest file"
+msgstr ""
+
+#: pulpcore/cli/container/repository.py:162
+msgid "Name of tag to remove"
 msgstr ""

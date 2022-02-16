@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-06 20:29+0100\n"
+"POT-Creation-Date: 2022-02-16 13:32+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,57 +17,38 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: pulpcore/cli/ansible/content.py:55 pulpcore/cli/ansible/content.py:87
-#: pulpcore/cli/ansible/repository.py:116
+#: pulpcore/cli/ansible/content.py:58 pulpcore/cli/ansible/content.py:88
+#: pulpcore/cli/ansible/content.py:119 pulpcore/cli/ansible/repository.py:104
 #, python-brace-format
 msgid "Name of {entity}"
 msgstr ""
 
-#: pulpcore/cli/ansible/content.py:56 pulpcore/cli/ansible/content.py:95
-#: pulpcore/cli/ansible/repository.py:124
+#: pulpcore/cli/ansible/content.py:59 pulpcore/cli/ansible/content.py:96
+#: pulpcore/cli/ansible/content.py:123 pulpcore/cli/ansible/repository.py:112
 #, python-brace-format
 msgid "Namespace of {entity}"
 msgstr ""
 
-#: pulpcore/cli/ansible/content.py:57 pulpcore/cli/ansible/content.py:102
-#: pulpcore/cli/ansible/repository.py:131
+#: pulpcore/cli/ansible/content.py:60 pulpcore/cli/ansible/content.py:103
+#: pulpcore/cli/ansible/content.py:129 pulpcore/cli/ansible/repository.py:119
 #, python-brace-format
 msgid "Version of {entity}"
 msgstr ""
 
-#: pulpcore/cli/ansible/content.py:64
-msgid ""
-"Only show highest version of collection version (only works for collection "
-"versions)"
+#: pulpcore/cli/ansible/content.py:66
+msgid "Only show highest version of collection version"
 msgstr ""
 
-#: pulpcore/cli/ansible/content.py:70
-msgid ""
-"Comma separated list of tags that must all match (only works for collection "
-"versions)"
+#: pulpcore/cli/ansible/content.py:71
+msgid "Comma separated list of tags that must all match"
 msgstr ""
 
-#: pulpcore/cli/ansible/content.py:76
+#: pulpcore/cli/ansible/content.py:77
 msgid "String list of fields to include in the result"
 msgstr ""
 
-#: pulpcore/cli/ansible/content.py:80
+#: pulpcore/cli/ansible/content.py:81
 msgid "String list of fields to exclude from result"
-msgstr ""
-
-#: pulpcore/cli/ansible/content.py:117
-#, python-brace-format
-msgid "Name of {entity}, only required for Roles"
-msgstr ""
-
-#: pulpcore/cli/ansible/content.py:118
-#, python-brace-format
-msgid "Namespace of {entity}, only required for Roles"
-msgstr ""
-
-#: pulpcore/cli/ansible/content.py:119
-#, python-brace-format
-msgid "Version of {entity}, only required for Roles"
 msgstr ""
 
 #: pulpcore/cli/ansible/context.py:20
@@ -78,35 +59,35 @@ msgstr ""
 msgid "ansible collection versions"
 msgstr ""
 
-#: pulpcore/cli/ansible/context.py:34
+#: pulpcore/cli/ansible/context.py:31
 msgid "ansible role"
 msgstr ""
 
-#: pulpcore/cli/ansible/context.py:35
+#: pulpcore/cli/ansible/context.py:32
 msgid "ansible roles"
 msgstr ""
 
-#: pulpcore/cli/ansible/context.py:43
+#: pulpcore/cli/ansible/context.py:38
 msgid "ansible distribution"
 msgstr ""
 
-#: pulpcore/cli/ansible/context.py:44
+#: pulpcore/cli/ansible/context.py:39
 msgid "ansible distributions"
 msgstr ""
 
-#: pulpcore/cli/ansible/context.py:62
+#: pulpcore/cli/ansible/context.py:53
 msgid "role remote"
 msgstr ""
 
-#: pulpcore/cli/ansible/context.py:63
+#: pulpcore/cli/ansible/context.py:54
 msgid "role remotes"
 msgstr ""
 
-#: pulpcore/cli/ansible/context.py:73
+#: pulpcore/cli/ansible/context.py:60
 msgid "collection remote"
 msgstr ""
 
-#: pulpcore/cli/ansible/context.py:74
+#: pulpcore/cli/ansible/context.py:61
 msgid "collection remotes"
 msgstr ""
 
@@ -137,24 +118,19 @@ msgid ""
 "repository to use  with --repository"
 msgstr ""
 
-#: pulpcore/cli/ansible/remote.py:36
-#, python-brace-format
-msgid "Option {parameter} not valid for Role remote, see --help"
-msgstr ""
-
-#: pulpcore/cli/ansible/remote.py:69
+#: pulpcore/cli/ansible/remote.py:66
 msgid "policy to use when downloading"
 msgstr ""
 
-#: pulpcore/cli/ansible/remote.py:76
+#: pulpcore/cli/ansible/remote.py:73
 msgid "Collections only: a Collection requirements yaml"
 msgstr ""
 
-#: pulpcore/cli/ansible/remote.py:81
+#: pulpcore/cli/ansible/remote.py:79
 msgid "Collections only: a string of a requirements yaml"
 msgstr ""
 
-#: pulpcore/cli/ansible/remote.py:86
+#: pulpcore/cli/ansible/remote.py:85
 msgid "Collections only: URL to receive a session token"
 msgstr ""
 
@@ -162,13 +138,13 @@ msgstr ""
 msgid "Collections only: token key use for authentication"
 msgstr ""
 
-#: pulpcore/cli/ansible/repository.py:55
+#: pulpcore/cli/ansible/repository.py:56
 msgid ""
 "Remote used for synching in the form '[[<plugin>:]<resource_type>:]<name>' "
 "or by href."
 msgstr ""
 
-#: pulpcore/cli/ansible/repository.py:154
+#: pulpcore/cli/ansible/repository.py:139
 msgid ""
 "JSON string with a list of objects to add to the repository.\n"
 "    Each object must contain the following keys: \"name\", \"namespace\", "
@@ -177,7 +153,7 @@ msgid ""
 "list of objects."
 msgstr ""
 
-#: pulpcore/cli/ansible/repository.py:163
+#: pulpcore/cli/ansible/repository.py:148
 msgid ""
 "JSON string with a list of objects to remove from the repository.\n"
 "    Each object must contain the following keys: \"name\", \"namespace\", "
@@ -186,7 +162,7 @@ msgid ""
 "list of objects."
 msgstr ""
 
-#: pulpcore/cli/ansible/repository.py:223
+#: pulpcore/cli/ansible/repository.py:205
 #, python-brace-format
 msgid ""
 "Repository '{name}' does not have a default remote. Please specify with '--"

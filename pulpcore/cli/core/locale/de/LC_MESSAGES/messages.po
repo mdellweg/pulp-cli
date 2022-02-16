@@ -7,191 +7,226 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-10-16 23:00+0200\n"
-"PO-Revision-Date: 2021-12-06 11:22+0100\n"
+"POT-Creation-Date: 2022-02-16 13:32+0100\n"
+"PO-Revision-Date: 2022-02-16 13:56+0100\n"
+"Last-Translator: Matthias Dellweg <mdellweg@redhat.com>\n"
+"Language-Team: \n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Last-Translator: Matthias Dellweg <mdellweg@redhat.com>\n"
-"Language-Team: \n"
-"X-Generator: Poedit 3.0\n"
+"X-Generator: Poedit 3.0.1\n"
 
-#: pulpcore/cli/core/content_guard.py:61 pulpcore/cli/core/content_guard.py:89
-msgid ""
-"Group to remove download permission from. Can be specified multiple times."
+#: pulpcore/cli/core/content_guard.py:64
+msgid "Group to add download role to. Can be specified multiple times."
 msgstr ""
+"Gruppe die die Download Rolle erhalten soll. Kann mehrfach genannt werden."
 
-#: pulpcore/cli/core/content_guard.py:67 pulpcore/cli/core/content_guard.py:95
-msgid ""
-"User to remove download permission from. Can be specified multiple times."
+#: pulpcore/cli/core/content_guard.py:70
+msgid "User to add download role to. Can be specified multiple times."
 msgstr ""
+"Benutzer der die Download Rolle erhalten soll. Kann mehrfach genannt werden."
 
-#: pulpcore/cli/core/context.py:16
+#: pulpcore/cli/core/content_guard.py:92
+msgid "Group to remove download role from. Can be specified multiple times."
+msgstr ""
+"Gruppe von der die Download Rolle entfernt werden soll. Kann mehrfach "
+"genannt werden."
+
+#: pulpcore/cli/core/content_guard.py:98
+msgid "User to remove download role from. Can be specified multiple times."
+msgstr ""
+"Benutzer von dem die Download Rolle entfernt werden soll. Kann mehrfach "
+"genannt werden."
+
+#: pulpcore/cli/core/context.py:21
 msgid "access policy"
-msgstr ""
+msgstr "Zugangsregel"
 
-#: pulpcore/cli/core/context.py:17
+#: pulpcore/cli/core/context.py:22
 msgid "access policies"
-msgstr ""
+msgstr "Zugangsregeln"
 
-#: pulpcore/cli/core/context.py:25
+#: pulpcore/cli/core/context.py:38
 msgid "artifact"
 msgstr "Artefakt"
 
-#: pulpcore/cli/core/context.py:26
+#: pulpcore/cli/core/context.py:39
 msgid "artifacts"
 msgstr "Artefakte"
 
-#: pulpcore/cli/core/context.py:46
+#: pulpcore/cli/core/context.py:57
 msgid "Artifact already exists."
 msgstr "Das Artefakt existiert bereits."
 
-#: pulpcore/cli/core/context.py:49
+#: pulpcore/cli/core/context.py:60
 #, python-brace-format
 msgid "Uploading file {filename}"
 msgstr "Datei {filename} wird hochgeladen"
 
-#: pulpcore/cli/core/context.py:75
+#: pulpcore/cli/core/context.py:83
 msgid "Upload complete. Creating artifact."
 msgstr "Hochladen vollständig. Artefakt wird erstellt."
 
-#: pulpcore/cli/core/context.py:88
+#: pulpcore/cli/core/context.py:96
 msgid "Pulp exporter"
 msgstr "Pulp Exporter"
 
-#: pulpcore/cli/core/context.py:89
+#: pulpcore/cli/core/context.py:97
 msgid "Pulp exporters"
 msgstr "Pulp Exporter"
 
-#: pulpcore/cli/core/context.py:99
+#: pulpcore/cli/core/context.py:103
 msgid "Pulp export"
 msgstr "Pulp Export"
 
-#: pulpcore/cli/core/context.py:100
+#: pulpcore/cli/core/context.py:104
 msgid "Pulp exports"
 msgstr "Pulp Exporte"
 
-#: pulpcore/cli/core/context.py:114
+#: pulpcore/cli/core/context.py:115
 msgid "user group"
 msgstr "Benutzergruppe"
 
-#: pulpcore/cli/core/context.py:115
+#: pulpcore/cli/core/context.py:116
 msgid "user groups"
 msgstr "Benutzergruppen"
 
-#: pulpcore/cli/core/context.py:125
+#: pulpcore/cli/core/context.py:130
 msgid "group permission"
 msgstr "Gruppen Berechtigung"
 
-#: pulpcore/cli/core/context.py:126
+#: pulpcore/cli/core/context.py:131
 msgid "group permissions"
 msgstr "Gruppen Berechtigungen"
 
-#: pulpcore/cli/core/context.py:145
+#: pulpcore/cli/core/context.py:150
 #, python-brace-format
 msgid "Could not find {entity} with {kwargs}."
 msgstr "Kann {entity} mit {kwargs} nicht finden."
 
-#: pulpcore/cli/core/context.py:157
+#: pulpcore/cli/core/context.py:162
 msgid "group model permission"
 msgstr ""
 
-#: pulpcore/cli/core/context.py:158
+#: pulpcore/cli/core/context.py:163
 msgid "group model permissions"
 msgstr ""
 
-#: pulpcore/cli/core/context.py:167
+#: pulpcore/cli/core/context.py:176
 msgid "group object permission"
 msgstr ""
 
-#: pulpcore/cli/core/context.py:168
+#: pulpcore/cli/core/context.py:177
 msgid "group object permissions"
 msgstr ""
 
-#: pulpcore/cli/core/context.py:177
+#: pulpcore/cli/core/context.py:190
+msgid "group role"
+msgstr "Gruppenrolle"
+
+#: pulpcore/cli/core/context.py:191
+msgid "group roles"
+msgstr "Gruppenrollen"
+
+#: pulpcore/cli/core/context.py:207
 msgid "group user"
 msgstr ""
 
-#: pulpcore/cli/core/context.py:178
+#: pulpcore/cli/core/context.py:208
 msgid "group users"
 msgstr ""
 
-#: pulpcore/cli/core/context.py:202
+#: pulpcore/cli/core/context.py:237
 msgid "Pulp importer"
 msgstr "Pulp Importer"
 
-#: pulpcore/cli/core/context.py:203
+#: pulpcore/cli/core/context.py:238
 msgid "Pulp importers"
 msgstr "Pulp Importer"
 
-#: pulpcore/cli/core/context.py:234
+#: pulpcore/cli/core/context.py:271
+msgid "role"
+msgstr "Rolle"
+
+#: pulpcore/cli/core/context.py:272
+msgid "roles"
+msgstr "Rollen"
+
+#: pulpcore/cli/core/context.py:279
 msgid "signing service"
 msgstr "Signatur Service"
 
-#: pulpcore/cli/core/context.py:235
+#: pulpcore/cli/core/context.py:280
 msgid "signing services"
 msgstr "Signatur Services"
 
-#: pulpcore/cli/core/context.py:242
+#: pulpcore/cli/core/context.py:286
 msgid "task"
 msgstr "Aufgabe"
 
-#: pulpcore/cli/core/context.py:243
+#: pulpcore/cli/core/context.py:287
 msgid "tasks"
 msgstr "Aufgaben"
 
-#: pulpcore/cli/core/context.py:268
+#: pulpcore/cli/core/context.py:331
 msgid "task group"
 msgstr "Aufgabengruppe"
 
-#: pulpcore/cli/core/context.py:269
+#: pulpcore/cli/core/context.py:332
 msgid "task groups"
 msgstr "Aufgabengruppen"
 
-#: pulpcore/cli/core/context.py:276
+#: pulpcore/cli/core/context.py:338
 msgid "upload"
 msgstr ""
 
-#: pulpcore/cli/core/context.py:277
+#: pulpcore/cli/core/context.py:339
 msgid "uploads"
 msgstr ""
 
-#: pulpcore/cli/core/context.py:295
+#: pulpcore/cli/core/context.py:370
 msgid "user"
 msgstr "Benutzer"
 
-#: pulpcore/cli/core/context.py:296
+#: pulpcore/cli/core/context.py:371
 msgid "users"
 msgstr "Benutzer"
 
-#: pulpcore/cli/core/context.py:303
+#: pulpcore/cli/core/context.py:378
+msgid "user role"
+msgstr "Benutzerrolle"
+
+#: pulpcore/cli/core/context.py:379
+msgid "user roles"
+msgstr "Benutzerrollen"
+
+#: pulpcore/cli/core/context.py:395
 msgid "worker"
 msgstr "Arbeiter"
 
-#: pulpcore/cli/core/context.py:304
+#: pulpcore/cli/core/context.py:396
 msgid "workers"
 msgstr "Arbeiter"
 
-#: pulpcore/cli/core/export.py:36
+#: pulpcore/cli/core/export.py:39
 #, python-brace-format
 msgid "'{value}' is not a valid href for {option_name}."
 msgstr "'{value}' ist kein gültiger Hyperlink für {option_name}."
 
-#: pulpcore/cli/core/export.py:47
+#: pulpcore/cli/core/export.py:50
 msgid "Repositories must be specified with plugin and type"
 msgstr "Repositories müssen mit Plugin und Typ spezifiziert werden."
 
-#: pulpcore/cli/core/export.py:53
+#: pulpcore/cli/core/export.py:56
 #, python-brace-format
 msgid ""
 "The type '{plugin}:{resource_type}' is not valid for the {option_name} "
 "option."
 msgstr ""
-"Der Typ '{plugin}:{resource_type}' ist ungültig für die Option "
-"{option_name}."
+"Der Typ '{plugin}:{resource_type}' ist ungültig für die Option {option_name}."
 
-#: pulpcore/cli/core/export.py:66
+#: pulpcore/cli/core/export.py:67
 #, python-brace-format
 msgid ""
 "The type '{plugin}:{resource_type}' does not support the '{capability}' "
@@ -200,73 +235,88 @@ msgstr ""
 "Der Typ '{plugin}:{resource_type}' unterstützt die Fähigkeit '{capability}' "
 "nicht."
 
-#: pulpcore/cli/core/export.py:97
+#: pulpcore/cli/core/export.py:98
 msgid "Name of owning PulpExporter"
 msgstr ""
 
-#: pulpcore/cli/core/export.py:99
+#: pulpcore/cli/core/export.py:100
 msgid "Limit the number of exporters to show."
-msgstr ""
+msgstr "Begrenze die Anzahl der anzuzeigenden Exporter."
 
-#: pulpcore/cli/core/export.py:101
+#: pulpcore/cli/core/export.py:102
 msgid "Skip a number of exporters to show."
-msgstr ""
+msgstr "Überspringe eine Anzahl der anzuzeigenden Exporter."
 
-#: pulpcore/cli/core/export.py:122
+#: pulpcore/cli/core/export.py:123
 msgid "Examples: 512MB, 1GB"
-msgstr ""
+msgstr "Beispiel: 512MB, 1GB"
 
 #: pulpcore/cli/core/exporter.py:36
 msgid ""
 "Repository to export from in the form '[[<plugin>:]<resource_type>:]<name>' "
 "or by href. Can be called multiple times."
 msgstr ""
-
-#: pulpcore/cli/core/generic.py:25
-msgid "List only tasks with this name."
-msgstr ""
-
-#: pulpcore/cli/core/generic.py:29
-msgid "List only tasks whose name contains this."
-msgstr ""
-
-#: pulpcore/cli/core/generic.py:34
-msgid "List only tasks with this correlation id."
-msgstr ""
+"Repository aus dem exportiert werden soll in der Form "
+"'[[<plugin>:]<resource_type>:]<name>' oder als href. Kann mehrfach genannt "
+"werden."
 
 #: pulpcore/cli/core/generic.py:43
+msgid "Either an href or a UUID must be provided."
+msgstr "Entweder eine href oder eine UUID muss spezifiziert werden."
+
+#: pulpcore/cli/core/generic.py:49
+msgid "List only tasks with this name."
+msgstr "Nur Aufgaben mit diesem Namen auflisten."
+
+#: pulpcore/cli/core/generic.py:53
+msgid "List only tasks whose name contains this."
+msgstr "Nur Aufgaben deren Namen dies enthält auflisten."
+
+#: pulpcore/cli/core/generic.py:58
+msgid "List only tasks with this correlation id."
+msgstr "Nur Aufgaben mit dieser Korrelations-ID auflisten."
+
+#: pulpcore/cli/core/generic.py:67
 msgid "List only tasks in this state."
-msgstr ""
+msgstr "Nur Aufgaben mit diesem Status auflisten."
 
-#: pulpcore/cli/core/group.py:48
+#: pulpcore/cli/core/generic.py:71
+msgid "List only tasks in this task group. Provide pulp_href or UUID."
+msgstr ""
+"Nur Aufgaben dieser Aufgabengruppe auflisten. Entweder pulp_href oder UUID "
+"angeben."
+
+#: pulpcore/cli/core/group.py:44
 msgid "This type of Permission does not have an object."
-msgstr ""
+msgstr "Diese Art Berechtigung hat kein Objekt."
 
-#: pulpcore/cli/core/group.py:50
+#: pulpcore/cli/core/group.py:46
 msgid "This type of Permission needs an object."
-msgstr ""
+msgstr "Diese Art Berechtigung benötigt ein Objekt."
 
-#: pulpcore/cli/core/group.py:60
+#: pulpcore/cli/core/group.py:55
 msgid "Manage user groups and their granted permissions."
-msgstr ""
+msgstr "Verwalte Benutzergruppen und ihre zugeordneten Berechtigungen."
 
-#: pulpcore/cli/core/group.py:103
+#: pulpcore/cli/core/group.py:101
 msgid "Show a list of the permissioons granted to a group."
-msgstr ""
+msgstr "Zeige eine Liste der Berechtigungen einer Gruppe."
 
-#: pulpcore/cli/core/group.py:108
+#: pulpcore/cli/core/group.py:106
 msgid "Grant a permission to the group."
-msgstr ""
+msgstr "Gib eine Berechtigung an die Gruppe."
 
-#: pulpcore/cli/core/group.py:125
+#: pulpcore/cli/core/group.py:123
 msgid "Revoke a permission from the group."
-msgstr ""
+msgstr "Entferne Berechtigung für die Gruppe."
 
 #: pulpcore/cli/core/importer.py:26
 msgid ""
 "A map of source repository name to destination repository name (eg. --repo-"
 "map src dest)"
 msgstr ""
+"Eine Übersetzungstabelle von Quellrepositorynamen zu Zielrepositorynamen (z."
+"B. --repo-map src dest)"
 
 #: pulpcore/cli/core/orphan.py:24
 msgid "List of specific Contents to delete if they are orphans"
@@ -278,13 +328,28 @@ msgid ""
 "becoming candidates for cleanup task"
 msgstr ""
 
-#: pulpcore/cli/core/show.py:12
+#: pulpcore/cli/core/role.py:32
+msgid "Cannot specify `--permission` and `--no-permission`."
+msgstr "`--premission` und `--no-permission` kann nicht kombiniert werden."
+
+#: pulpcore/cli/core/role.py:59
+msgid ""
+"Permission in the form '<app_label>.<codename>'. Can be used multiple times."
+msgstr ""
+"Berechtigung in der Form '<app_label>.<codename>'. Kann mehrfach gennant "
+"werden."
+
+#: pulpcore/cli/core/role.py:64
+msgid "Name of the role"
+msgstr "Name der Rolle"
+
+#: pulpcore/cli/core/show.py:11
 msgid "HREF of the entry"
 msgstr "HREF des Eintrags"
 
 #: pulpcore/cli/core/status.py:13
 msgid "Number of retries before failing."
-msgstr ""
+msgstr "Anzahl der Wiederholungen."
 
 #: pulpcore/cli/core/status.py:14
 msgid "Seconds to wait between retries."
@@ -294,47 +359,66 @@ msgstr "Wartezeit in Sekunden zwischen Versuchen."
 msgid "Cannot specify a negative retry count."
 msgstr "Ein negativer Wiederholungszähler kann nicht angegeben werden."
 
-#: pulpcore/cli/core/task.py:34
+#: pulpcore/cli/core/task.py:44
 #, python-brace-format
 msgid "UUID of the {entity}"
 msgstr "UUID des/der {entity}"
 
-#: pulpcore/cli/core/task.py:54
+#: pulpcore/cli/core/task.py:69
 msgid "Wait for the task to finish"
 msgstr "Warte bis die Aufgabe beendet ist."
 
-#: pulpcore/cli/core/task.py:62
+#: pulpcore/cli/core/task.py:77
 #, python-brace-format
 msgid "Waiting for task {href} to finish."
 msgstr "Warten bis die Aufgabe {href} beendet ist."
 
-#: pulpcore/cli/core/task.py:72
+#: pulpcore/cli/core/task.py:87
 msgid "Cancel all 'waiting' and 'running' tasks."
 msgstr "Alle laufenden und wartenden Aufgaben abbrechen."
 
-#: pulpcore/cli/core/task.py:74
+#: pulpcore/cli/core/task.py:89
 msgid "Cancel all 'waiting' tasks."
 msgstr "Alle wartenden Aufgaben abbrechen."
 
-#: pulpcore/cli/core/task.py:75
+#: pulpcore/cli/core/task.py:90
 msgid "Cancel all 'running' tasks."
 msgstr "Alle laufenden Aufgaben abbrechen."
 
-#: pulpcore/cli/core/task.py:103
+#: pulpcore/cli/core/task.py:118
 #, python-brace-format
 msgid "Task {href} is in state {state} and cannot be canceled."
 msgstr ""
 "Aufgabe {href} hat den Status {state} und kann nicht abgebrochen werden."
 
-#: pulpcore/cli/core/task.py:109
+#: pulpcore/cli/core/task.py:124
 #, python-brace-format
 msgid "Waiting to cancel task {href}"
 msgstr "Warte bis die Aufgabe {href} abgebrochen ist"
 
-#: pulpcore/cli/core/task.py:115
+#: pulpcore/cli/core/task.py:130
 msgid "Done."
 msgstr "Fertig."
 
-#: pulpcore/cli/core/user.py:29
-msgid "Username of the entry"
-msgstr "Benutzername des Eintrags"
+#: pulpcore/cli/core/task.py:137
+msgid ""
+"Purge task-records whose 'finished' time is **before** the time specified."
+msgstr ""
+
+#: pulpcore/cli/core/task.py:142
+msgid ""
+"Only purge tasks in the specified state(s). Can be specified multiple times."
+msgstr ""
+
+#: pulpcore/cli/core/user.py:31
+#, python-brace-format
+msgid "Username of the {entity}"
+msgstr "Benutzername des {entity}."
+
+#: pulpcore/cli/core/user.py:43
+msgid ""
+"Password for the user. Provide an empty string to disable password "
+"authentication."
+msgstr ""
+"Passwort des Benutzers. Spezifiziere eine leere Zeichenkette um die "
+"Passwortauthentifizierung zu deaktivieren."

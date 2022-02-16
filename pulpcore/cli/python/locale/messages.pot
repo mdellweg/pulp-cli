@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-06 19:41+0100\n"
+"POT-Creation-Date: 2022-02-16 13:32+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -29,51 +29,51 @@ msgstr ""
 msgid "Path to file"
 msgstr ""
 
-#: pulpcore/cli/python/context.py:20
+#: pulpcore/cli/python/context.py:18
 msgid "python package"
 msgstr ""
 
-#: pulpcore/cli/python/context.py:21
+#: pulpcore/cli/python/context.py:19
 msgid "python packages"
 msgstr ""
 
-#: pulpcore/cli/python/context.py:29
+#: pulpcore/cli/python/context.py:25
 msgid "python distribution"
 msgstr ""
 
-#: pulpcore/cli/python/context.py:30
+#: pulpcore/cli/python/context.py:26
 msgid "python distributions"
 msgstr ""
 
-#: pulpcore/cli/python/context.py:50
+#: pulpcore/cli/python/context.py:42
 msgid "python publication"
 msgstr ""
 
-#: pulpcore/cli/python/context.py:51
+#: pulpcore/cli/python/context.py:43
 msgid "python publications"
 msgstr ""
 
-#: pulpcore/cli/python/context.py:68
+#: pulpcore/cli/python/context.py:57
 msgid "python remote"
 msgstr ""
 
-#: pulpcore/cli/python/context.py:69
+#: pulpcore/cli/python/context.py:58
 msgid "python remotes"
 msgstr ""
 
-#: pulpcore/cli/python/distribution.py:33
+#: pulpcore/cli/python/distribution.py:36
 msgid ""
-"Repository to be used for auto-publishing. When set, this will unset the "
+"Repository to be used for auto-distributing. When set, this will unset the "
 "'publication'. Specified as '[[<plugin>:]<type>:]<name>' or as href."
 msgstr ""
 
-#: pulpcore/cli/python/distribution.py:64
+#: pulpcore/cli/python/distribution.py:75
 msgid ""
-"Publication to be served. This will unset the 'repository' and disable auto "
-"publish."
+"Publication to be served. This will unset the 'repository' and disable auto-"
+"distribute."
 msgstr ""
 
-#: pulpcore/cli/python/publication.py:50
+#: pulpcore/cli/python/publication.py:49
 msgid "a repository version number, leave blank for latest"
 msgstr ""
 

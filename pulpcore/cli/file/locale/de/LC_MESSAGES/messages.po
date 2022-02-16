@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-10-16 23:00+0200\n"
+"POT-Creation-Date: 2022-02-16 13:32+0100\n"
 "PO-Revision-Date: 2021-12-06 11:23+0100\n"
 "Last-Translator: Matthias Dellweg <mdellweg@redhat.com>\n"
 "Language-Team: \n"
@@ -17,19 +17,19 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.0\n"
 
-#: pulpcore/cli/file/acs.py:29
+#: pulpcore/cli/file/acs.py:30
 msgid "path to add to ACS; can be specified multiple times."
 msgstr ""
 
-#: pulpcore/cli/file/acs.py:70
+#: pulpcore/cli/file/acs.py:71
 msgid "ACS already has path '{}'."
 msgstr ""
 
-#: pulpcore/cli/file/acs.py:90
+#: pulpcore/cli/file/acs.py:91
 msgid "ACS does not have path(s): {}."
 msgstr ""
 
-#: pulpcore/cli/file/acs.py:102
+#: pulpcore/cli/file/acs.py:103
 msgid ""
 "Remote to attach to ACS in the form '[[<plugin>:]<resource_type>:]<name>' or "
 "by href."
@@ -47,52 +47,52 @@ msgstr ""
 msgid "file ACSes"
 msgstr ""
 
-#: pulpcore/cli/file/context.py:38 pulpcore/cli/file/context.py:39
+#: pulpcore/cli/file/context.py:30 pulpcore/cli/file/context.py:31
 msgid "file content"
 msgstr ""
 
-#: pulpcore/cli/file/context.py:47
+#: pulpcore/cli/file/context.py:37
 msgid "file distribution"
 msgstr ""
 
-#: pulpcore/cli/file/context.py:48
+#: pulpcore/cli/file/context.py:38
 msgid "file distributions"
 msgstr ""
 
-#: pulpcore/cli/file/context.py:68
+#: pulpcore/cli/file/context.py:54
 msgid "file publication"
 msgstr ""
 
-#: pulpcore/cli/file/context.py:69
+#: pulpcore/cli/file/context.py:55
 msgid "file publications"
 msgstr ""
 
-#: pulpcore/cli/file/context.py:86
+#: pulpcore/cli/file/context.py:69
 msgid "file remote"
 msgstr ""
 
-#: pulpcore/cli/file/context.py:87
+#: pulpcore/cli/file/context.py:70
 msgid "file remotes"
 msgstr ""
 
-#: pulpcore/cli/file/distribution.py:32
+#: pulpcore/cli/file/distribution.py:31
 msgid ""
-"Repository to be used for auto-publishing. When set, this will unset the "
+"Repository to be used for auto-distributing. When set, this will unset the "
 "'publication'. Specified as '[[<plugin>:]<type>:]<name>' or as href."
 msgstr ""
 
-#: pulpcore/cli/file/distribution.py:63
+#: pulpcore/cli/file/distribution.py:62
 msgid ""
-"Publication to be served. This will unset the 'repository' and disable auto "
-"publish."
+"Publication to be served. This will unset the 'repository' and disable auto-"
+"distribute."
 msgstr ""
 
-#: pulpcore/cli/file/publication.py:50
+#: pulpcore/cli/file/publication.py:49
 msgid "a repository version number, leave blank for latest"
 msgstr ""
 "Versionsnummer des Repositories, leer lassen um die letzte zu verwenden"
 
-#: pulpcore/cli/file/publication.py:54
+#: pulpcore/cli/file/publication.py:53
 msgid ""
 "Filename to use for manifest file containing metadata for all the files."
 msgstr ""
