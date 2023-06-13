@@ -110,7 +110,7 @@ class PulpExportContext(PulpEntityContext):
 
     @property
     def scope(self) -> t.Dict[str, t.Any]:
-        return {PulpExporterContext.HREF: self.exporter["pulp_href"]}
+        return {PulpExporterContext.HREF: self.exporter["pulp_href"], **self._scope}
 
 
 class PulpGroupContext(PulpEntityContext):
@@ -190,7 +190,7 @@ class PulpGroupPermissionContext(PulpEntityContext):
 
     @property
     def scope(self) -> t.Dict[str, t.Any]:
-        return {self.group_ctx.HREF: self.group_ctx.pulp_href}
+        return {self.group_ctx.HREF: self.group_ctx.pulp_href, **self._scope}
 
 
 class PulpGroupModelPermissionContext(PulpGroupPermissionContext):
@@ -236,7 +236,7 @@ class PulpGroupRoleContext(PulpEntityContext):
 
     @property
     def scope(self) -> t.Dict[str, t.Any]:
-        return {self.group_ctx.HREF: self.group_ctx.pulp_href}
+        return {self.group_ctx.HREF: self.group_ctx.pulp_href, **self._scope}
 
 
 class PulpGroupUserContext(PulpEntityContext):
@@ -259,7 +259,7 @@ class PulpGroupUserContext(PulpEntityContext):
 
     @property
     def scope(self) -> t.Dict[str, t.Any]:
-        return {self.group_ctx.HREF: self.group_ctx.pulp_href}
+        return {self.group_ctx.HREF: self.group_ctx.pulp_href, **self._scope}
 
 
 class PulpContentRedirectContentGuardContext(PulpContentGuardContext):
@@ -423,11 +423,14 @@ class PulpTaskContext(PulpEntityContext):
     def scope(self) -> t.Dict[str, t.Any]:
         if self.resource_context:
             if self.pulp_ctx.has_plugin(PluginRequirement("core", specifier=">=3.22.0")):
-                return {"reserved_resources": self.resource_context.pulp_href}
+                return {"reserved_resources": self.resource_context.pulp_href, **self._scope}
             else:
-                return {"reserved_resources_record": [self.resource_context.pulp_href]}
+                return {
+                    "reserved_resources_record": [self.resource_context.pulp_href],
+                    **self._scope,
+                }
         else:
-            return {}
+            return self._scope
 
     def purge(
         self,
@@ -537,7 +540,7 @@ class PulpUserRoleContext(PulpEntityContext):
 
     @property
     def scope(self) -> t.Dict[str, t.Any]:
-        return {self.user_ctx.HREF: self.user_ctx.pulp_href}
+        return {self.user_ctx.HREF: self.user_ctx.pulp_href, **self._scope}
 
 
 class PulpWorkerContext(PulpEntityContext):

@@ -638,6 +638,7 @@ class PulpEntityContext(PulpViewSetContext):
     # Hidden values for the lazy entity lookup
     _entity: t.Optional[EntityDefinition]
     _entity_lookup: EntityDefinition
+    _scope: Dict[str, Any]
 
     @property
     def scope(self) -> t.Dict[str, t.Any]:
@@ -646,7 +647,7 @@ class PulpEntityContext(PulpViewSetContext):
 
         Subclasses for nested entities can define the parameters for there parent scope here.
         """
-        return {}
+        return self._scope
 
     @property
     def entity(self) -> EntityDefinition:
@@ -711,12 +712,14 @@ class PulpEntityContext(PulpViewSetContext):
         pulp_ctx: PulpContext,
         pulp_href: t.Optional[str] = None,
         entity: t.Optional[EntityDefinition] = None,
+        scope: t.Optional[Dict[str, Any]] = None,
     ) -> None:
         assert pulp_href is None or entity is None
 
         super().__init__(pulp_ctx)
         self.meta: t.Dict[str, str] = {}
 
+        self._scope = scope if scope is not None else {}
         self._entity = None
         self._entity_lookup = entity or {}
         if pulp_href is not None:
@@ -1144,16 +1147,17 @@ class PulpRepositoryVersionContext(PulpEntityContext):
         pulp_ctx: PulpContext,
         repository_ctx: "PulpRepositoryContext",
         pulp_href: t.Optional[str] = None,
+        **kwargs: Any,
     ) -> None:
-        super().__init__(pulp_ctx, pulp_href=pulp_href)
+        super().__init__(pulp_ctx, pulp_href=pulp_href, **kwargs)
         self.repository_ctx = repository_ctx
 
     @property
     def scope(self) -> t.Dict[str, t.Any]:
         if self.ID_PREFIX == "repository_versions":
-            return {}
+            return self._scope
         else:
-            return {self.repository_ctx.HREF: self.repository_ctx.pulp_href}
+            return {self.repository_ctx.HREF: self.repository_ctx.pulp_href, **self._scope}
 
     @property
     def entity(self) -> EntityDefinition:
@@ -1197,8 +1201,7 @@ class PulpRepositoryContext(PulpEntityContext):
             cls.TYPE_REGISTRY[f"{cls.PLUGIN}:{cls.RESOURCE_TYPE}"] = cls
 
     def get_version_context(
-        self,
-        number: t.Optional[int] = None,
+        self, number: t.Optional[int] = None, **kwargs: Any
     ) -> PulpRepositoryVersionContext:
         """
         Return a repository version context of the proper type scoped for this repository.
@@ -1219,7 +1222,7 @@ class PulpRepositoryContext(PulpEntityContext):
         else:
             version_href = None
         return self.VERSION_CONTEXT(
-            pulp_ctx=self.pulp_ctx, repository_ctx=self, pulp_href=version_href
+            pulp_ctx=self.pulp_ctx, repository_ctx=self, pulp_href=version_href, **kwargs
         )
 
     def preprocess_entity(self, body: EntityDefinition, partial: bool = False) -> EntityDefinition:

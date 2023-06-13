@@ -37,6 +37,7 @@ sha256=$(sha256sum test.txt | cut -d' ' -f1)
 
 expect_succ pulp artifact upload --file test.txt
 expect_succ pulp file content create --sha256 "$sha256" --relative-path upload_test/test.txt
+content_href="$(echo "$OUTPUT" | jq -r .pulp_href)"
 
 expect_succ pulp file repository create --name "cli_test_file_repository"
 # New content commands
@@ -61,4 +62,9 @@ test "$(echo "$OUTPUT" | jq -r length)" -gt "0"
 
 expect_succ pulp repository version list
 expect_succ pulp repository version list --content "[]"
-expect_succ pulp repository version list --content "$(jq -R '[.]' <<<"$content_href")"
+expect_succ pulp repository version list --content '["'"$content_href"'"]'
+expect_succ test "$(echo "$OUTPUT" | jq -r length)" -eq "2"
+expect_succ pulp file content repository version list --href "$content_href"
+expect_succ test "$(echo "$OUTPUT" | jq -r length)" -eq "2"
+expect_succ pulp file content repository version list --sha256 "$sha256" --relative-path upload_test/test.txt
+expect_succ test "$(echo "$OUTPUT" | jq -r length)" -eq "2"

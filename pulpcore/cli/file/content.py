@@ -9,9 +9,11 @@ from pulp_glue.file.context import PulpFileContentContext, PulpFileRepositoryCon
 from pulpcore.cli.common.generic import (
     PulpCLIContext,
     chunk_size_option,
+    content_href_option,
+    content_repository_command,
     create_command,
-    href_option,
     list_command,
+    lookup_callback,
     pass_entity_context,
     pass_pulp_context,
     pulp_group,
@@ -21,22 +23,6 @@ from pulpcore.cli.common.generic import (
 
 translation = get_translation(__package__)
 _ = translation.gettext
-
-
-def _relative_path_callback(ctx: click.Context, param: click.Parameter, value: str) -> str:
-    if value is not None:
-        entity_ctx = ctx.find_object(PulpEntityContext)
-        assert entity_ctx is not None
-        entity_ctx.entity = {"relative_path": value}
-    return value
-
-
-def _sha256_callback(ctx: click.Context, param: click.Parameter, value: str) -> str:
-    if value is not None:
-        entity_ctx = ctx.find_object(PulpEntityContext)
-        assert entity_ctx is not None
-        entity_ctx.entity = {"sha256": value}
-    return value
 
 
 def _sha256_artifact_callback(
@@ -83,9 +69,15 @@ def content(ctx: click.Context, pulp_ctx: PulpCLIContext, content_type: str) -> 
 
 
 lookup_options = [
-    href_option,
-    click.option("--relative-path", callback=_relative_path_callback, expose_value=False),
-    click.option("--sha256", callback=_sha256_callback, expose_value=False),
+    content_href_option,
+    click.option(
+        "--relative-path",
+        callback=lookup_callback("relative_path", PulpFileContentContext),
+        expose_value=False,
+    ),
+    click.option(
+        "--sha256", callback=lookup_callback("sha256", PulpFileContentContext), expose_value=False
+    ),
 ]
 create_options = [
     click.option("--relative-path", required=True),
@@ -109,6 +101,7 @@ content.add_command(
 )
 content.add_command(show_command(decorators=lookup_options))
 content.add_command(create_command(decorators=create_options))
+content.add_command(content_repository_command(decorators=lookup_options))
 
 
 @content.command()

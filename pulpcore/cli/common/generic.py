@@ -984,6 +984,12 @@ repository_href_option = click.option(
     expose_value=False,
 )
 
+content_href_option = click.option(
+    "--href",
+    help=_("HREF of the content"),
+    callback=href_callback(PulpContentContext),
+    expose_value=False,
+)
 repository_lookup_option = resource_lookup_option(
     "--repository",
     context_class=PulpRepositoryContext,
@@ -1542,7 +1548,44 @@ def role_command(**kwargs: t.Any) -> click.Command:
     return role_group
 
 
+<<<<<<< HEAD
 def repository_content_command(**kwargs: t.Any) -> click.Group:
+||||||| parent of b6697b5 (WIP Add content repository subcommands)
+def repository_content_command(**kwargs: Any) -> click.Group:
+=======
+def content_repository_command(**kwargs: Any) -> click.Group:
+    """A factory for a content repository subcommand."""
+
+    kwargs.setdefault("name", "repository")
+    kwargs.setdefault("help", _("Query repositories containing the content."))
+    decorators = kwargs.pop("decorators", [content_href_option])
+
+    @pulp_group(**kwargs)
+    @pass_pulp_context
+    @click.pass_context
+    def content_repository_group(
+        ctx: click.Context,
+        pulp_ctx: PulpCLIContext,
+    ) -> None:
+        ctx.obj = PulpRepositoryContext(pulp_ctx)
+
+    @content_repository_group.group("version")
+    @pass_content_context
+    @pass_repository_context
+    @click.pass_context
+    def version_group(
+        ctx: click.Context,
+        repository_ctx: PulpRepositoryContext,
+        content_ctx: PulpContentContext,
+    ) -> None:
+        ctx.obj = repository_ctx.get_version_context(scope={"content__in": [content_ctx]})
+
+    version_group.add_command(list_command(decorators=decorators))
+    return content_repository_group
+
+
+def repository_content_command(**kwargs: Any) -> click.Group:
+>>>>>>> b6697b5 (WIP Add content repository subcommands)
     """A factory that creates a repository content command group."""
 
     content_contexts = kwargs.pop("contexts", {})
