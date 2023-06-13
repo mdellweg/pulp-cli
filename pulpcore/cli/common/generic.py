@@ -101,10 +101,22 @@ def _yaml_formatter(result: t.Any) -> str:
     return output
 
 
+def _href_formatter(result: t.Any) -> str:
+    if result is None:
+        return ""
+    if isinstance(result, list):
+        return "\n".join((_href_formatter(item) for item in result))
+    elif isinstance(result, dict):
+        return result.get("pulp_href", "N/A")
+    else:
+        return "N/A"
+
+
 REGISTERED_OUTPUT_FORMATTERS = {
     "none": _none_formatter,
     "json": _json_formatter,
     "yaml": _yaml_formatter,
+    "href": _href_formatter,
 }
 
 
