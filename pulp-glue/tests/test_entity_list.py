@@ -18,12 +18,14 @@ def file_repository(pulp_ctx: PulpContext) -> t.Dict[str, t.Any]:
     file_repository_ctx.delete()
 
 
-def test_converge_href(pulp_ctx: PulpContext, file_repository: t.Dict[str, t.Any]) -> None:
+def test_entity_list(pulp_ctx: PulpContext, file_repository: t.Dict[str, t.Any]) -> None:
     entity_ctx = PulpFileRepositoryContext(pulp_ctx)
     assert (
         len(entity_ctx.list(limit=1, offset=0, parameters={"name": file_repository["name"]})) == 1
     )
 
+def test_entity_list_iterator(pulp_ctx: PulpContext, file_repository: t.Dict[str, t.Any]) -> None:
+    entity_ctx = PulpFileRepositoryContext(pulp_ctx)
     stats: t.Dict[str, t.Any] = {}
     assert (
         len(
