@@ -93,13 +93,9 @@ class PluginRequirement:
 class PulpException(Exception):
     """The base exception `pulp-glue` will emit on expected error paths."""
 
-    pass
-
 
 class PulpEntityNotFound(PulpException):
     """Exception to signify that an entity was not found."""
-
-    pass
 
 
 class PulpHTTPError(PulpException):
@@ -113,11 +109,9 @@ class PulpHTTPError(PulpException):
 class PulpNoWait(Exception):
     """Exception to indicate that a task continues running in the background."""
 
-    pass
-
 
 class NotImplementedFake(NotImplementedError):
-    pass
+    """Exception to indicate that a call incompatible with fake mode was attempted."""
 
 
 def _preprocess_value(value: t.Any) -> t.Any:
