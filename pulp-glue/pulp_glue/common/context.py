@@ -232,7 +232,7 @@ class PulpContext:
         domain: Name of the domain to interact with.
         fake_mode: In fake mode, no modifying calls will be performed.
             Where possible, instead of failing, the requested result will be faked.
-            This implies `safe_calls_only=True` on the `api_kwargs`.
+            This implies `dry_run=True` on the `api_kwargs`.
         verify: A boolean or a path to the CA bundle.
     """
 
@@ -285,7 +285,7 @@ class PulpContext:
         self.timeout: datetime.timedelta = timeout
         self.fake_mode: bool = fake_mode
         if self.fake_mode:
-            self._api_kwargs["safe_calls_only"] = True
+            self._api_kwargs["dry_run"] = True
 
     @classmethod
     def from_config_files(
@@ -354,15 +354,10 @@ class PulpContext:
             api_kwargs["headers"] = dict(
                 (header.split(":", maxsplit=1) for header in config["headers"])
             )
-        for key in ["cert", "key", "user_agent", "cid"]:
+        # Why do we have two names here? Get rid of that...
+        for key in ["cert", "key", "user_agent", "cid", "dry_run", "verify_ssl"]:
             if key in config:
                 api_kwargs[key] = config[key]
-        for key0, key1 in [
-            ["verify_ssl", "validate_certs"],
-            ["dry_run", "safe_calls_only"],
-        ]:
-            if key0 in config:
-                api_kwargs[key1] = config[key0]
 
         return cls(
             api_root=config.get("api_root", "/pulp/"),
