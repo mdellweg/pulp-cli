@@ -24,6 +24,7 @@ def test_entity_list(pulp_ctx: PulpContext, file_repository: t.Dict[str, t.Any])
         len(entity_ctx.list(limit=1, offset=0, parameters={"name": file_repository["name"]})) == 1
     )
 
+
 def test_entity_list_iterator(pulp_ctx: PulpContext, file_repository: t.Dict[str, t.Any]) -> None:
     entity_ctx = PulpFileRepositoryContext(pulp_ctx)
     stats: t.Dict[str, t.Any] = {}

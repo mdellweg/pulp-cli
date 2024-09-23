@@ -6,6 +6,7 @@ import datetime
 import json
 import os
 import typing as t
+import warnings
 from collections import defaultdict
 from contextlib import suppress
 from io import BufferedReader
@@ -40,7 +41,7 @@ class OpenAPIValidationError(OpenAPIError):
 
 
 class UnsafeCallError(OpenAPIError):
-    """Exception raised for POST, PUT, PATCH or DELETE calls with `safe_calls_only=True`."""
+    """Exception raised for POST, PUT, PATCH or DELETE calls with `dry_run=True`."""
 
     pass
 
@@ -151,12 +152,14 @@ class OpenAPI:
         auth_provider: Object that returns requests auth objects according to the api spec.
         cert: Client certificate used for auth.
         key: Matching key for `cert` if not already included.
-        validate_certs: Whether to check server TLS certificates agains a CA.
+        verify_ssl: Whether to check server TLS certificates agains a CA.
         refresh_cache: Whether to fetch the api doc regardless.
-        safe_calls_only: Flag to disallow issuing POST, PUT, PATCH or DELETE calls.
+        dry_run: Flag to disallow issuing POST, PUT, PATCH or DELETE calls.
         debug_callback: Callback that will be called with strings useful for logging or debugging.
         user_agent: String to use in the User-Agent header.
         cid: Correlation ID to send with all requests.
+        validate_certs: DEPRECATED use verify_ssl instead.
+        safe_calls_only: DEPRECATED use dry_run instead.
     """
 
     def __init__(
@@ -167,20 +170,28 @@ class OpenAPI:
         auth_provider: t.Optional[AuthProviderBase] = None,
         cert: t.Optional[str] = None,
         key: t.Optional[str] = None,
-        validate_certs: bool = True,
+        verify_ssl: bool = True,
         refresh_cache: bool = False,
-        safe_calls_only: bool = False,
+        dry_run: bool = False,
         debug_callback: t.Optional[t.Callable[[int, str], t.Any]] = None,
         user_agent: t.Optional[str] = None,
         cid: t.Optional[str] = None,
+        validate_certs: t.Optional[bool] = None,
+        safe_calls_only: t.Optional[bool] = None,
     ):
-        if not validate_certs:
+        if validate_certs is not None:
+            warnings.warn("validate_certs is deprecated; use verify_ssl instead.")
+            verify_ssl = validate_certs
+        if safe_calls_only is not None:
+            warnings.warn("safe_calls_only is deprecated; use dry_run instead.")
+            dry_run = safe_calls_only
+        if not verify_ssl:
             urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
         self.debug_callback: t.Callable[[int, str], t.Any] = debug_callback or (lambda i, x: None)
         self.base_url: str = base_url
         self.doc_path: str = doc_path
-        self.safe_calls_only: bool = safe_calls_only
+        self.dry_run: bool = dry_run
         self.auth_provider = auth_provider
 
         self._session: requests.Session = requests.session()
@@ -206,7 +217,7 @@ class OpenAPI:
             self._session.headers.update(headers)
         self._session.max_redirects = 0
 
-        verify: t.Optional[t.Union[bool, str]] = validate_certs and os.environ.get(
+        verify: t.Optional[t.Union[bool, str]] = verify_ssl and os.environ.get(
             "PULP_CA_BUNDLE", True
         )
         session_settings = self._session.merge_environment_settings(
@@ -771,7 +782,7 @@ class OpenAPI:
             self.debug_callback(2, f"  {key}: {value}")
         if request.body is not None:
             self.debug_callback(3, f"{request.body!r}")
-        if self.safe_calls_only and method.upper() not in SAFE_METHODS:
+        if self.dry_run and method.upper() not in SAFE_METHODS:
             raise UnsafeCallError(_("Call aborted due to safe mode"))
         try:
             response: requests.Response = self._session.send(request)
