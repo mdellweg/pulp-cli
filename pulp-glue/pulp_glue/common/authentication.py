@@ -3,6 +3,8 @@ from datetime import datetime, timedelta
 
 import requests
 
+from pulp_glue.common.context import PulpException
+
 
 class OAuth2ClientCredentialsAuth(requests.auth.AuthBase):
     """
@@ -89,9 +91,27 @@ class OAuth2ClientCredentialsAuth(requests.auth.AuthBase):
             auth=self._token_server_auth,
             verify=self._verify,
         )
-
-        response.raise_for_status()
-
-        token = response.json()
-        self._expire_at = datetime.now() + timedelta(seconds=token["expires_in"])
-        self._access_token = token["access_token"]
+        try:
+            result = response.json()
+            if response.status == 401:
+                error = result["error"]
+                msg = f"Authentication to OAuth2 token bearer failed. ({result})"
+                if error_description := result.get("error_description"):
+                    msg += f"\nOriginal description: {error_description}"
+                if error_uri := result.get("error_uri"):
+                    msg += f"\nOriginal uri: {error_uri}"
+                raise PulpException(msg)
+            elif response.status == 400:
+                error = result["error"]
+                msg = f"Failed to retrieve token. ({result})"
+                if error_description := result.get("error_description"):
+                    msg += f"\nOriginal description: {error_description}"
+                if error_uri := result.get("error_uri"):
+                    msg += f"\nOriginal uri: {error_uri}"
+                raise PulpException(msg)
+            elif response.status != 200:
+                raise PulpException(f"Unexpected response {response.status} recieved.")
+            self._expire_at = datetime.now() + timedelta(seconds=result["expires_in"])
+            self._access_token = result["access_token"]
+        except Exception:
+            raise PulpException("Malformed response from OAuth2 token bearer.")
