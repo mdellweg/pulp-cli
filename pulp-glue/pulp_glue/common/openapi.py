@@ -1,16 +1,19 @@
 # copyright (c) 2020, Matthias Dellweg
 # GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+import asyncio
 import base64
 import datetime
 import json
 import os
+import ssl
 import typing as t
 from collections import defaultdict
 from contextlib import suppress
 from io import BufferedReader
 from urllib.parse import urljoin
 
+import aiohttp
 import requests
 import urllib3
 
@@ -174,6 +177,9 @@ class OpenAPI:
         self._safe_calls_only: bool = safe_calls_only
         self._headers = headers or {}
         self._verify = verify
+        # Shall we make that a parameter?
+        self._ssl_context: t.Optional[t.Union[ssl.SSLContext, bool]] = None
+
         self._auth_provider = auth_provider
         self._cert = cert
         self._key = key
@@ -225,6 +231,22 @@ class OpenAPI:
     def cid(self) -> t.Optional[str]:
         return self._headers.get("Correlation-Id")
 
+    @property
+    def ssl_context(self) -> t.Union[ssl.SSLContext, bool]:
+        if self._ssl_context is None:
+            if self._verify is False:
+                self._ssl_context = False
+            else:
+                if isinstance(self._verify, str):
+                    self._ssl_context = ssl.create_default_context(cafile=self._verify)
+                else:
+                    self._ssl_context = ssl.create_default_context()
+                if self._cert is not None:
+                    self._ssl_context.load_cert_chain(self._cert, self._key)
+            # Type inference is failing here.
+            self._ssl_context = t.cast(t.Union[ssl.SSLContext, bool], self._ssl_context)
+        return self._ssl_context
+
     def load_api(self, refresh_cache: bool = False) -> None:
         # TODO: Find a way to invalidate caches on upstream change
         xdg_cache_home: str = os.environ.get("XDG_CACHE_HOME") or "~/.cache"
@@ -242,7 +264,7 @@ class OpenAPI:
             self._parse_api(data)
         except Exception:
             # Try again with a freshly downloaded version
-            data = self._download_api()
+            data = asyncio.run(self._download_api())
             self._parse_api(data)
             # Write to cache as it seems to be valid
             os.makedirs(os.path.dirname(apidoc_cache), exist_ok=True)
@@ -262,28 +284,31 @@ class OpenAPI:
             if method in {"get", "put", "post", "delete", "options", "head", "patch", "trace"}
         }
 
-    def _download_api(self) -> bytes:
+    async def _download_api(self) -> bytes:
         try:
-            response: requests.Response = self._session.get(urljoin(self._base_url, self._doc_path))
-        except requests.RequestException as e:
+            connector = aiohttp.TCPConnector(ssl=self.ssl_context)
+            async with aiohttp.ClientSession(connector=connector, headers=self._headers) as session:
+                async with session.get(urljoin(self._base_url, self._doc_path)) as response:
+                    response.raise_for_status()
+                    data = await response.read()
+                if "Correlation-Id" in response.headers:
+                    self._set_correlation_id(response.headers["Correlation-Id"])
+        except aiohttp.ClientError as e:
             raise OpenAPIError(str(e))
-        response.raise_for_status()
-        if "Correlation-ID" in response.headers:
-            self._set_correlation_id(response.headers["Correlation-ID"])
-        return response.content
+        return data
 
     def _set_correlation_id(self, correlation_id: str) -> None:
-        if "Correlation-ID" in self._headers:
-            if self._headers["Correlation-ID"] != correlation_id:
+        if "Correlation-Id" in self._headers:
+            if self._headers["Correlation-Id"] != correlation_id:
                 raise OpenAPIError(
                     _("Correlation ID returned from server did not match. {} != {}").format(
-                        self._headers["Correlation-ID"], correlation_id
+                        self._headers["Correlation-Id"], correlation_id
                     )
                 )
         else:
-            self._headers["Correlation-ID"] = correlation_id
+            self._headers["Correlation-Id"] = correlation_id
             # Do it for requests too...
-            self._session.headers["Correlation-ID"] = correlation_id
+            self._session.headers["Correlation-Id"] = correlation_id
 
     def param_spec(
         self, operation_id: str, param_type: str, required: bool = False
@@ -802,7 +827,7 @@ class OpenAPI:
             self._debug_callback(2, f"  {key}: {value}")
         if response.text:
             self._debug_callback(3, f"{response.text}")
-        if "Correlation-ID" in response.headers:
-            self._set_correlation_id(response.headers["Correlation-ID"])
+        if "Correlation-Id" in response.headers:
+            self._set_correlation_id(response.headers["Correlation-Id"])
         response.raise_for_status()
         return self.parse_response(method_spec, response)
