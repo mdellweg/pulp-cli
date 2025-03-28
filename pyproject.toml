@@ -47,8 +47,8 @@ changelog = "https://pulpproject.org/pulp-cli/changes/"
 pulp = "pulp_cli:main"
 
 [project.entry-points."pulp_cli.plugins"]
+common = "pulp_cli.common"
 ansible = "pulpcore.cli.ansible"
-common = "pulpcore.cli.common"
 container = "pulpcore.cli.container"
 core = "pulpcore.cli.core"
 file = "pulpcore.cli.file"
@@ -112,7 +112,7 @@ replace = "__version__ = \"{new_version}\""
 
 [[tool.bumpversion.files]]
 # This section is managed by the cookiecutter templates.
-filename = "./pulpcore/cli/common/__init__.py"
+filename = "./pulp_cli/common/__init__.py"
 search = "__version__ = \"{current_version}\""
 replace = "__version__ = \"{new_version}\""
 

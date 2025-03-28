@@ -1,0 +1,11 @@
+import typing as t
+
+import click
+
+from pulp_cli.common.debug import debug
+
+__version__ = "0.32.0.dev"
+
+
+def mount(main: click.Group, **kwargs: t.Any) -> None:
+    main.add_command(debug)
