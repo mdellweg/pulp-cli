@@ -9,6 +9,7 @@ from contextlib import ExitStack
 from pathlib import Path
 
 from packaging.specifiers import SpecifierSet
+from pydantic import BaseModel, Field
 
 from pulp_glue.common.authentication import GlueAuthProvider
 from pulp_glue.common.exceptions import (
@@ -246,6 +247,18 @@ def patch_security_scheme_mutual_tls(api_spec: t.Any) -> t.Any:
     return api_spec
 
 
+class PulpContextConfig(BaseModel):
+    base_url: str = "http://localhost"
+    api_root: str = "/pulp/"
+    api_version: t.Literal["v3", "v4"] = "v3"
+    domain: str = "default"
+    background_tasks: bool = False
+    timeout: int | datetime.timedelta = 300
+    chunk_size: int | None = None
+    fake_mode: bool = False
+    verify_ssl: bool | str | None = Field(default=None, validation_alias="verify")
+
+
 class PulpContext:
     """
     Abstract class for the global PulpContext object.
@@ -372,7 +385,7 @@ class PulpContext:
         return cls.from_config(config)
 
     @classmethod
-    def from_config(cls, config: dict[str, t.Any]) -> "t.Self":
+    def from_config(cls, config: dict[str, t.Any], /) -> "t.Self":
         """
         Create a `PulpContext` object from a config dictionary.
 
@@ -381,8 +394,9 @@ class PulpContext:
         Returns:
             A configured `PulpContext` object.
         """
+        _config = PulpContextConfig.model_validate(config)
         api_kwargs: dict[str, t.Any] = {
-            "base_url": config["base_url"],
+            "base_url": _config.base_url,
         }
         api_kwargs["auth_provider"] = GlueAuthProvider(
             **{
@@ -400,10 +414,12 @@ class PulpContext:
                 api_kwargs[key] = config[key]
 
         return cls(
-            api_root=config.get("api_root", "/pulp/"),
-            domain=config.get("domain", "default"),
-            verify_ssl=config.get("verify_ssl", True),
-            api_version=config.get("api_version", "v3"),
+            api_root=_config.api_root,
+            domain=_config.domain,
+            verify_ssl=_config.verify_ssl,
+            api_version=_config.api_version,
+            fake_mode=_config.fake_mode,
+            chunk_size=_config.chunk_size,
             api_kwargs=api_kwargs,
         )
 
