@@ -42,7 +42,7 @@ setup(
         "click>=8.0.0,<9.0.0",
         "packaging",
         "PyYAML~=5.3",
-        "schema==0.7.5",
+        "schema==0.7.7",
         "setuptools",
         "requests~=2.24",
         "toml==0.10.2",
