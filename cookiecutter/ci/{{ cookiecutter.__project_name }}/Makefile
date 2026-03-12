@@ -80,7 +80,7 @@ docs:
 
 .PHONY: servedocs
 servedocs:
-	pulp-docs serve -w CHANGES.md -w pulp-glue/pulp_glue -w pulp_cli/generic.py
+	pulp-docs serve --draft -w CHANGES.md -w pulp-glue{{ cookiecutter.__app_label_suffix }}/src/pulp_glue {%- if cookiecutter.__app_label_suffix == "" %} -w src/pulp_cli/generic.py{% endif %}
 {%- endif %}
 {%- if cookiecutter.translations %}
 {%- if cookiecutter.glue %}

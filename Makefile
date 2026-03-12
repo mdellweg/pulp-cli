@@ -60,7 +60,7 @@ docs:
 
 .PHONY: servedocs
 servedocs:
-	pulp-docs serve -w CHANGES.md -w pulp-glue/pulp_glue -w pulp_cli/generic.py
+	pulp-docs serve --draft -w CHANGES.md -w pulp-glue/src/pulp_glue -w src/pulp_cli/generic.py
 
 pulp-glue/pulp_glue/%/locale/messages.pot: pulp-glue/pulp_glue/%/*.py
 	xgettext -d $* -o $@ pulp-glue/pulp_glue/$*/*.py

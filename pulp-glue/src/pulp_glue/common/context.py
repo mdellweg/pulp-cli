@@ -693,6 +693,9 @@ class PulpContext:
         self,
         plugin_requirement: PluginRequirement,
     ) -> bool:
+        """
+        Return whether a specific plugin requirement is met by the server.
+        """
         version: str | None = self.component_versions.get(plugin_requirement.name)
         return version in plugin_requirement
 
@@ -700,6 +703,12 @@ class PulpContext:
         self,
         plugin_requirement: PluginRequirement,
     ) -> None:
+        """
+        Assert, that a specific plugin requirement is met by the server.
+
+        In case the api has not yet been instanciated, the requirement check will be postponed to
+        only happen on the first actual call to the api.
+        """
         if self._api is not None:
             if not self.has_plugin(plugin_requirement):
                 component = f"{plugin_requirement.name}{plugin_requirement.specifier}"
@@ -723,7 +732,8 @@ class PulpContext:
 
     def resolve_prn(self, prn: str) -> "PulpEntityContext":
         """
-        A factory to provide subclasses of `PulpEntityContext` based on a given PRN.
+        A factory to provide subclasses of
+        [pulp_glue.common.context.PulpEntityContext][] based on a given PRN.
         """
         match = prn_regex.fullmatch(prn)
         if match is None:
