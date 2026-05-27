@@ -201,11 +201,11 @@ def mock_send_request(request: _Request) -> _Response:
         assert set(request.data["scopes"].split(" ")) == {"write:pets", "read:pets"}
         return _Response(
             status_code=200,
-            headers={},
+            headers=CIMultiDict(),
             body=json.dumps({"access_token": "DEADBEEF", "expires_in": 600}).encode(),
         )
     else:
-        return _Response(status_code=200, headers={}, body=b"{}")
+        return _Response(status_code=200, headers=CIMultiDict(), body=b"{}")
 
 
 @pytest.fixture
@@ -256,7 +256,7 @@ class TestRenderRequest:
     ) -> None:
         method, path = mock_openapi.operations["get_test_id"]
         path_spec = mock_openapi._api_spec.paths[path]
-        request = mock_openapi._render_request(path_spec, method, "test/", {}, {}, None)
+        request = mock_openapi._render_request(path_spec, method, "test/", params={}, headers={})
         assert request.security == [{}]
 
     def test_request_has_security(
@@ -267,7 +267,7 @@ class TestRenderRequest:
         method, path = mock_openapi.operations["post_test_id"]
         path_spec = mock_openapi._api_spec.paths[path]
         request = mock_openapi._render_request(
-            path_spec, method, "test/", {}, {}, {"text": "TRACE"}
+            path_spec, method, "test/", params={}, headers={}, body={"text": "TRACE"}
         )
         assert request.security == [{"B": []}]
 
@@ -277,7 +277,7 @@ class TestParseResponse:
         self,
         mock_openapi: OpenAPI,
     ) -> None:
-        response = _Response(204, {}, b"")
+        response = _Response(204, headers=CIMultiDict(), body=b"")
         operation_spec = mock_openapi._api_spec.paths["test/"].get
         assert operation_spec is not None
 
@@ -289,13 +289,46 @@ class TestParseResponse:
         self,
         mock_openapi: OpenAPI,
     ) -> None:
-        response = _Response(200, {"content-type": "application/json"}, b'{"a": 1, "b": "Hallo!"}')
+        response = _Response(
+            200,
+            headers=CIMultiDict({"content-type": "application/json"}),
+            body=b'{"a": 1, "b": "Hallo!"}',
+        )
         operation_spec = mock_openapi._api_spec.paths["test/"].post
         assert operation_spec is not None
 
         result = mock_openapi._parse_response(operation_spec, response)
 
         assert result == {"a": 1, "b": "Hallo!"}
+
+
+def test_extract_cookies(
+    mock_openapi: OpenAPI,
+) -> None:
+    response = _Response(
+        200,
+        headers=CIMultiDict(
+            (
+                ("content-type", "text/plain"),
+                (
+                    "set-cookie",
+                    "csrftoken=C3gBQ0SMgEJR6FCMUpy3Hf3iXfhkA17B; expires=Wed, 26 May 2027 13:22:50 GMT; Max-Age=31449600; Path=/; SameSite=Lax",
+                ),
+                (
+                    "set-cookie",
+                    "sessionid=1kj1jdpk750wvff7yrda30pa07tzqr4a; expires=Wed, 10 Jun 2026 13:22:50 GMT; HttpOnly; Max-Age=1209600; Path=/; SameSite=Lax",
+                ),
+            )
+        ),
+        body=b"",
+    )
+    cookies = mock_openapi._extract_cookies(response)
+    assert len(cookies) == 2
+    # TODO: Do we need to care about the other cookie attributes too?
+    assert cookies == {
+        "csrftoken": "C3gBQ0SMgEJR6FCMUpy3Hf3iXfhkA17B",
+        "sessionid": "1kj1jdpk750wvff7yrda30pa07tzqr4a",
+    }
 
 
 class TestRenderParameters:

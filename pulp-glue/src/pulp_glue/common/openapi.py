@@ -6,7 +6,7 @@ import ssl
 import typing as t
 import warnings
 from base64 import b64encode
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from functools import cached_property
 from io import BufferedReader
@@ -61,8 +61,12 @@ class _Request:
     operation_id: str
     method: str
     url: str
-    headers: MutableMultiMapping[str] | CIMultiDict[str] | t.MutableMapping[str, str]
-    params: dict[str, str] | None = None
+    headers: MutableMultiMapping[str] | CIMultiDict[str] | t.MutableMapping[str, str] = field(
+        default_factory=CIMultiDict
+    )
+
+    cookies: dict[str, str] = field(default_factory=dict)
+    params: dict[str, str] = field(default_factory=dict)
     data: dict[str, t.Any] | str | None = None
     files: dict[str, tuple[str, UploadType, str]] | None = None
     security: list[dict[str, list[str]]] | None = None
@@ -71,7 +75,7 @@ class _Request:
 @dataclass
 class _Response:
     status_code: int
-    headers: MutableMultiMapping[str] | CIMultiDictProxy[str] | t.MutableMapping[str, str]
+    headers: MutableMultiMapping[str] | CIMultiDictProxy[str]
     body: bytes
 
 
@@ -470,14 +474,17 @@ class OpenAPI:
         path_spec: oas.PathItem,
         method: str,
         url: str,
-        params: dict[str, t.Any],
-        headers: dict[str, str],
+        /,
+        params: dict[str, t.Any] | None = None,
+        headers: dict[str, str] | None = None,
+        cookies: dict[str, str] | None = None,
         body: dict[str, t.Any] | None = None,
         validate_body: bool = True,
     ) -> _Request:
         method_spec: oas.Operation = getattr(path_spec, method)
         _headers = CIMultiDict(self._headers)
-        _headers.update(headers)
+        if headers:
+            _headers.update(headers)
 
         security: list[dict[str, list[str]]] | None
         if self._auth_provider and "Authorization" not in self._headers:
@@ -500,7 +507,8 @@ class OpenAPI:
             method=method,
             url=url,
             headers=_headers,
-            params=params,
+            params=params or {},
+            cookies=cookies or {},
             data=data,
             files=files,
             security=security,
@@ -573,6 +581,15 @@ class OpenAPI:
                     request.headers["Authorization"] = f"Basic {secret.decode()}"
                 else:
                     raise NotImplementedError("Auth scheme: http " + security_scheme.scheme)
+            elif isinstance(security_scheme, oas.SecuritySchemeApiKey):
+                api_key = await self._auth_provider.api_key_credentials()
+                if security_scheme.in_ == "query":
+                    request.params[security_scheme.name] = api_key
+                elif security_scheme.in_ == "header":
+                    request.headers[security_scheme.name] = api_key
+                elif security_scheme.in_ == "cookie":
+                    request.cookies[security_scheme.name] = api_key
+
             elif isinstance(security_scheme, oas.SecuritySchemeOAuth2):
                 flow = security_scheme.flows.client_credentials
                 if flow is None:
@@ -628,11 +645,13 @@ class OpenAPI:
                 request.method,
                 request.url,
                 params=request.params,
+                cookies=request.cookies,
                 headers=request.headers,
                 data=request.data,
                 files=request.files,
             )
-            response = _Response(status_code=r.status_code, headers=r.headers, body=r.content)
+            headers = CIMultiDict(r.headers)
+            response = _Response(status_code=r.status_code, headers=headers, body=r.content)
         except requests.TooManyRedirects as e:
             assert e.response is not None
             raise OpenAPIError(
@@ -689,19 +708,30 @@ class OpenAPI:
                         )
                     )
         if isinstance(response_spec, oas.Reference):
-            raise NotImplementedError("Respose References")
+            raise NotImplementedError("Response References")
         content_type = response.headers.get("content-type")
         if content_type is not None and content_type.startswith("application/json"):
             assert content_type in response_spec.content
             return json.loads(response.body)
         return None
 
+    def _extract_cookies(self, response: _Response) -> dict[str, str]:
+        # and "Set-Cookie" in response.headers
+        result = {}
+        for cookie_desc in response.headers.getall("set-cookie", []):
+            parts = cookie_desc.split(";")
+            name, value = parts[0].split("=", maxsplit=1)
+            result[name] = value
+        return result
+
     def call(
         self,
         operation_id: str,
+        /,
         parameters: dict[str, t.Any] | None = None,
         body: dict[str, t.Any] | None = None,
         validate_body: bool = True,
+        cookies: dict[str, str] | None = None,
     ) -> t.Any:
         """
         Make a call to the server.
@@ -729,8 +759,7 @@ class OpenAPI:
             parameters = {}
         rendered_parameters = self._render_parameters(path_spec, operation_spec, parameters)
 
-        if len(rendered_parameters["cookie"]) > 0:
-            raise NotImplementedError("Cookie Parameters")
+        cookies = rendered_parameters["cookie"]
 
         headers = rendered_parameters["header"]
 
@@ -745,9 +774,10 @@ class OpenAPI:
             path_spec,
             method,
             url,
-            query_params,
-            headers,
-            body,
+            params=query_params,
+            headers=headers,
+            cookies=cookies,
+            body=body,
             validate_body=validate_body,
         )
         self._log_request(request)
@@ -761,9 +791,9 @@ class OpenAPI:
 
         response = self._send_request(request)
 
-        if proposal is not None:
-            assert self._auth_provider is not None
+        if self._auth_provider is not None:
             if may_retry and response.status_code == 401:
+                assert proposal is not None
                 self._oauth2_token = None
                 asyncio.run(self._authenticate_request(request, proposal))
                 response = self._send_request(request)
@@ -774,4 +804,6 @@ class OpenAPI:
                 asyncio.run(self._auth_provider.auth_failure_hook())
 
         self._log_response(response)
+        if cookies is not None:
+            cookies.update(self._extract_cookies(response))
         return self._parse_response(operation_spec, response)

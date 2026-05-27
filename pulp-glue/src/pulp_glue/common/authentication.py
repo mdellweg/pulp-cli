@@ -15,6 +15,9 @@ class AuthProviderBase:
     def can_complete_http_basic(self) -> t.Literal[False] | int:
         return False
 
+    def can_complete_api_key(self) -> t.Literal[False] | int:
+        return False
+
     def can_complete_mutualTLS(self) -> t.Literal[False] | int:
         return False
 
@@ -27,6 +30,8 @@ class AuthProviderBase:
         if isinstance(security_scheme, oas.SecuritySchemeHttp):
             if security_scheme.scheme == "basic":
                 return self.can_complete_http_basic()
+        elif isinstance(security_scheme, oas.SecuritySchemeApiKey):
+            return self.can_complete_api_key()
         elif isinstance(security_scheme, oas.SecuritySchemeMutualTLS):
             return self.can_complete_mutualTLS()
         elif isinstance(security_scheme, oas.SecuritySchemeOAuth2):
@@ -66,6 +71,9 @@ class AuthProviderBase:
     async def http_basic_credentials(self) -> tuple[bytes, bytes]:
         raise NotImplementedError()
 
+    async def api_key_credentials(self) -> str:
+        raise NotImplementedError()
+
     async def oauth2_client_credentials(self) -> tuple[bytes, bytes]:
         raise NotImplementedError()
 
@@ -100,6 +108,7 @@ class GlueAuthProvider(AuthProviderBase):
         *,
         username: t.AnyStr | None = None,
         password: t.AnyStr | None = None,
+        api_key: str | None = None,
         client_id: t.AnyStr | None = None,
         client_secret: t.AnyStr | None = None,
         cert: str | None = None,
@@ -108,6 +117,7 @@ class GlueAuthProvider(AuthProviderBase):
         super().__init__()
         self.username: bytes | None = None
         self.password: bytes | None = None
+        self.api_key: str | None = api_key
         self.client_id: bytes | None = None
         self.client_secret: bytes | None = None
         self.cert: str | None = cert
@@ -131,6 +141,9 @@ class GlueAuthProvider(AuthProviderBase):
         # Basic auth is comparatively costly on the server side.
         return self.username is not None and 15
 
+    def can_complete_api_key(self) -> t.Literal[False] | int:
+        return self.api_key is not None and 5
+
     def can_complete_oauth2_client_credentials(self, scopes: list[str]) -> t.Literal[False] | int:
         # There is an extra roundtrip for aquiring the token.
         # Should be cheap afterwards.
@@ -144,6 +157,10 @@ class GlueAuthProvider(AuthProviderBase):
         assert self.username is not None
         assert self.password is not None
         return self.username, self.password
+
+    async def api_key_credentials(self) -> str:
+        assert self.api_key is not None
+        return self.api_key
 
     async def oauth2_client_credentials(self) -> tuple[bytes, bytes]:
         assert self.client_id is not None

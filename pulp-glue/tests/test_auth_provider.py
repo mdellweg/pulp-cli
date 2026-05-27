@@ -57,6 +57,7 @@ SECURITY_SCHEMES = TypeAdapter(dict[str, oas.SecurityScheme | oas.Reference]).va
             },
         },
         "E": {"type": "mutualTLS"},
+        "F": {"type": "apiKey", "in": "cookie", "name": "sessionid"},
     }
 )
 
@@ -103,6 +104,11 @@ class TestGlueAuthProvider:
         provider = GlueAuthProvider(username="user1", password="secret1")
         assert provider.can_complete_http_basic() == 15
         assert asyncio.run(provider.http_basic_credentials()) == (b"user1", b"secret1")
+
+    def test_can_complete_api_key(self) -> None:
+        provider = GlueAuthProvider(api_key="test_api_key_123")
+        assert provider.can_complete({"F": []}, security_schemes=SECURITY_SCHEMES)
+        assert asyncio.run(provider.api_key_credentials()) == "test_api_key_123"
 
     def test_client_id_needs_client_secret(self) -> None:
         with pytest.raises(AssertionError):
