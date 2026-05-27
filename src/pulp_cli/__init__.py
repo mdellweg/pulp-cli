@@ -11,6 +11,7 @@ from pulp_glue.common.i18n import get_translation
 
 from pulp_cli.config import CONFIG_LOCATIONS, config, config_options, validate_config
 from pulp_cli.generic import PulpCLIContext, pulp_group
+from pulp_cli.login import login, logout
 
 if sys.version_info >= (3, 11):
     import tomllib
@@ -258,6 +259,8 @@ def main(
 
 
 main.add_command(config)
+main.add_command(login)
+main.add_command(logout)
 
 
 if HAS_CLICK_SHELL:

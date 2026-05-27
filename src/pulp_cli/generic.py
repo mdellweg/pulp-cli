@@ -11,7 +11,7 @@ import click
 import schema as s
 import yaml
 
-from pulp_glue.common.authentication import AuthProviderBase
+from pulp_glue.common.authentication import GlueAuthProvider
 from pulp_glue.common.context import (
     DATETIME_FORMATS,
     DEFAULT_LIMIT,
@@ -209,7 +209,7 @@ class PulpCLIContext(PulpContext):
         click.echo(formatter(result))
 
 
-class PulpCLIAuthProvider(AuthProviderBase):
+class PulpCLIAuthProvider(GlueAuthProvider):
     """
     The auth provider using cli promts to ask for missing passwords.
     """
