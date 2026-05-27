@@ -1,7 +1,14 @@
+import os
 import typing as t
 import warnings
+from datetime import datetime, timezone
+from functools import cached_property
+from pathlib import Path
+
+from multidict import CIMultiDict
 
 from pulp_glue.common import oas
+from pulp_glue.common.cookie import Cookie, cookiejar_adapter
 
 
 class AuthProviderBase:
@@ -13,6 +20,11 @@ class AuthProviderBase:
     """
 
     def can_complete_http_basic(self) -> t.Literal[False] | int:
+        return False
+
+    def can_complete_api_key(
+        self, security_scheme: oas.SecuritySchemeApiKey
+    ) -> t.Literal[False] | int:
         return False
 
     def can_complete_mutualTLS(self) -> t.Literal[False] | int:
@@ -27,6 +39,8 @@ class AuthProviderBase:
         if isinstance(security_scheme, oas.SecuritySchemeHttp):
             if security_scheme.scheme == "basic":
                 return self.can_complete_http_basic()
+        elif isinstance(security_scheme, oas.SecuritySchemeApiKey):
+            return self.can_complete_api_key(security_scheme)
         elif isinstance(security_scheme, oas.SecuritySchemeMutualTLS):
             return self.can_complete_mutualTLS()
         elif isinstance(security_scheme, oas.SecuritySchemeOAuth2):
@@ -49,7 +63,7 @@ class AuthProviderBase:
                 warnings.warn("OpenAPI references security scheme it does not define.")
                 return False
             if isinstance(security_scheme, oas.Reference):
-                # TODO implement dereferencing in the authenticating code first.
+                warnings.warn("References for security scheme are not yet implemented.")
                 return False
             if (extra_cost := self.can_complete_scheme(security_scheme, scopes)) is False:
                 return False
@@ -63,7 +77,16 @@ class AuthProviderBase:
     async def auth_failure_hook(self, **kwargs: t.Any) -> None:
         pass
 
+    async def response_headers_hook(self, headers: CIMultiDict[str]) -> None:
+        pass
+
+    def csrftoken(self) -> str:
+        raise NotImplementedError()
+
     async def http_basic_credentials(self) -> tuple[bytes, bytes]:
+        raise NotImplementedError()
+
+    async def api_key_credentials(self, security_scheme: oas.SecuritySchemeApiKey) -> str:
         raise NotImplementedError()
 
     async def oauth2_client_credentials(self) -> tuple[bytes, bytes]:
@@ -100,6 +123,7 @@ class GlueAuthProvider(AuthProviderBase):
         *,
         username: t.AnyStr | None = None,
         password: t.AnyStr | None = None,
+        api_key: str | None = None,
         client_id: t.AnyStr | None = None,
         client_secret: t.AnyStr | None = None,
         cert: str | None = None,
@@ -108,6 +132,7 @@ class GlueAuthProvider(AuthProviderBase):
         super().__init__()
         self.username: bytes | None = None
         self.password: bytes | None = None
+        self.api_key: str | None = api_key
         self.client_id: bytes | None = None
         self.client_secret: bytes | None = None
         self.cert: str | None = cert
@@ -127,9 +152,78 @@ class GlueAuthProvider(AuthProviderBase):
         if cert is None and key is not None:
             raise RuntimeError("Key can only be used together with a cert.")
 
+    # This class also acts as a cookiejar for authentication.
+    # TODO IMPORTANT!!! Cookies need to be scoped by the server to not leak them.
+    @cached_property
+    def _cookiejar_path(self) -> Path | None:
+        if (xdg_runtime_dir := os.environ.get("XDG_RUNTIME_DIR")) is not None:
+            runtime_dir = Path(xdg_runtime_dir) / "pulp"
+            runtime_dir.mkdir(0o700, parents=True, exist_ok=True)
+            return runtime_dir / "cookiejar.json"
+        warnings.warn("No xdg runtime dir defined. Cookies are not persisted.")
+        return None
+
+    @cached_property
+    def _cookiejar(self) -> dict[str, Cookie]:
+        cookiejar = {}
+        if self._cookiejar_path is not None and self._cookiejar_path.exists():
+            try:
+                cookies = cookiejar_adapter.validate_json(self._cookiejar_path.read_bytes())
+                for c in cookies:
+                    cookiejar[c.name] = c
+            except (OSError, ValueError):
+                warnings.warn("Reading cookies failed.")
+        return cookiejar
+
+    def _expire_cookies(self) -> None:
+        now = datetime.now(timezone.utc)
+        self._cookiejar = {
+            n: c for n, c in self._cookiejar.items() if c.expires is not None and c.expires > now
+        }
+
+    def _store_cookies(self) -> None:
+        if self._cookiejar_path is not None:
+            try:
+                self._cookiejar_path.touch(0o600)
+                cookies = [c for c in self._cookiejar.values()]
+                self._cookiejar_path.write_bytes(cookiejar_adapter.dump_json(cookies))
+            except (OSError, ValueError):
+                warnings.warn("Writing cookies failed.")
+
+    async def response_headers_hook(self, headers: CIMultiDict[str]) -> None:
+        # Update CookieJar.
+        changed = False
+        for ch in headers.getall("set-cookie", []):
+            c = Cookie.from_header(ch)
+            old_c = self._cookiejar.get(c.name)
+            if c.value == "" or c.value == '""':
+                if old_c is not None:
+                    self._cookiejar.pop(c.name)
+                    changed = True
+            elif c != old_c:
+                self._cookiejar[c.name] = c
+                changed = True
+        if changed:
+            self._store_cookies()
+
+    def csrftoken(self) -> str:
+        if (c := self._cookiejar.get("csrftoken")) is None:
+            raise RuntimeError("No csrftoken available.")
+        return c.value
+
     def can_complete_http_basic(self) -> t.Literal[False] | int:
         # Basic auth is comparatively costly on the server side.
         return self.username is not None and 15
+
+    def can_complete_api_key(
+        self, security_scheme: oas.SecuritySchemeApiKey
+    ) -> t.Literal[False] | int:
+        if security_scheme.in_ == "cookie":
+            self._expire_cookies()
+            if security_scheme.name in self._cookiejar:
+                # We seem to have the session cookie, so no extra cost.
+                return 0
+        return self.api_key is not None and 5
 
     def can_complete_oauth2_client_credentials(self, scopes: list[str]) -> t.Literal[False] | int:
         # There is an extra roundtrip for aquiring the token.
@@ -144,6 +238,12 @@ class GlueAuthProvider(AuthProviderBase):
         assert self.username is not None
         assert self.password is not None
         return self.username, self.password
+
+    async def api_key_credentials(self, security_scheme: oas.SecuritySchemeApiKey) -> str:
+        if security_scheme.in_ == "cookie" and security_scheme.name in self._cookiejar:
+            return self._cookiejar[security_scheme.name].value
+        assert self.api_key is not None
+        return self.api_key
 
     async def oauth2_client_credentials(self) -> tuple[bytes, bytes]:
         assert self.client_id is not None
