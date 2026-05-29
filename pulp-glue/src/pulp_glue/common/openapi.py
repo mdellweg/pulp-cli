@@ -7,7 +7,7 @@ import typing as t
 import warnings
 from base64 import b64encode
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from functools import cached_property
 from io import BufferedReader
 from pathlib import Path
@@ -20,6 +20,7 @@ from requests.auth import AuthBase
 
 from pulp_glue.common import __version__, oas
 from pulp_glue.common.authentication import AuthProviderBase
+from pulp_glue.common.cookie import Cookie, cookiejar_adapter
 from pulp_glue.common.exceptions import (
     OpenAPIError,
     PulpAuthenticationFailed,
@@ -165,6 +166,9 @@ class OpenAPI:
         if cid:
             self._headers["Correlation-Id"] = cid
 
+        self._cookiejar: dict[str, Cookie] = {}
+
+        self._load_cookies()
         self._setup_session()
 
         self._oauth2_lock = asyncio.Lock()
@@ -222,6 +226,36 @@ class OpenAPI:
             if self._auth_provider is not None and self._auth_provider.can_complete_mutualTLS():
                 _ssl_context.load_cert_chain(*self._auth_provider.tls_credentials())
         return _ssl_context
+
+    def _expire_cookies(self) -> None:
+        now = datetime.now(timezone.utc)
+        for name, c in self._cookiejar.items():
+            print(now)
+            print(c.expires)
+            if c.expires is not None and c.expires < now:
+                self._cookiejar.pop(name)
+
+    def _load_cookies(self) -> None:
+        if (xdg_runtime_dir := os.environ.get("XDG_RUNTIME_DIR")) is not None:
+            cookiejar = os.path.join(xdg_runtime_dir, "pulp_cookiejar")
+            try:
+                with open(cookiejar, "rb") as f:
+                    cookies = cookiejar_adapter.validate_json(f.read())
+
+                    for c in cookies:
+                        self._cookiejar[c.name] = c
+            except (IOError, ValueError):
+                pass
+
+    def _store_cookies(self) -> None:
+        if (xdg_runtime_dir := os.environ.get("XDG_RUNTIME_DIR")) is not None:
+            cookiejar = os.path.join(xdg_runtime_dir, "pulp_cookiejar")
+            try:
+                with open(cookiejar, "wb") as f:
+                    cookies = [c for c in self._cookiejar.values() if c.name != "csrftoken"]
+                    f.write(cookiejar_adapter.dump_json(cookies))
+            except (IOError, ValueError):
+                pass
 
     def load_api(self, refresh_cache: bool = False) -> None:
         # TODO: Find a way to invalidate caches on upstream change
@@ -650,7 +684,7 @@ class OpenAPI:
                 data=request.data,
                 files=request.files,
             )
-            headers = CIMultiDict(r.headers)
+            headers = CIMultiDict(r.raw.headers)
             response = _Response(status_code=r.status_code, headers=headers, body=r.content)
         except requests.TooManyRedirects as e:
             assert e.response is not None
@@ -676,6 +710,22 @@ class OpenAPI:
             self._debug_callback(2, f"  {key}: {value}")
         if response.body:
             self._debug_callback(3, f"{response.body!r}")
+
+    def _extract_cookies(self, response: _Response) -> None:
+        # Do not save the csrf cookie to disk.
+        changed = False
+        for ch in response.headers.getall("set-cookie", []):
+            c = Cookie.from_header(ch)
+            old_c = self._cookiejar.get(c.name)
+            if c.value == "":
+                if old_c is not None:
+                    self._cookiejar.pop(c.name)
+                    changed |= (c.name != "csrftoken")
+            elif c != old_c:
+                self._cookiejar[c.name] = c
+                changed |= (c.name != "csrftoken")
+        if changed:
+            self._store_cookies()
 
     def _parse_response(self, operation_spec: oas.Operation, response: _Response) -> t.Any:
         if "Correlation-Id" in response.headers:
@@ -715,15 +765,6 @@ class OpenAPI:
             return json.loads(response.body)
         return None
 
-    def _extract_cookies(self, response: _Response) -> dict[str, str]:
-        # and "Set-Cookie" in response.headers
-        result = {}
-        for cookie_desc in response.headers.getall("set-cookie", []):
-            parts = cookie_desc.split(";")
-            name, value = parts[0].split("=", maxsplit=1)
-            result[name] = value
-        return result
-
     def call(
         self,
         operation_id: str,
@@ -731,7 +772,6 @@ class OpenAPI:
         parameters: dict[str, t.Any] | None = None,
         body: dict[str, t.Any] | None = None,
         validate_body: bool = True,
-        cookies: dict[str, str] | None = None,
     ) -> t.Any:
         """
         Make a call to the server.
@@ -751,6 +791,8 @@ class OpenAPI:
 
             NotImplementedError: well, the name really says is all.
         """
+        self._expire_cookies()
+
         method, path = self.operations[operation_id]
         path_spec = self._api_spec.paths[path]
         operation_spec = getattr(path_spec, method)
@@ -804,6 +846,5 @@ class OpenAPI:
                 asyncio.run(self._auth_provider.auth_failure_hook())
 
         self._log_response(response)
-        if cookies is not None:
-            cookies.update(self._extract_cookies(response))
+        self._extract_cookies(response)
         return self._parse_response(operation_spec, response)

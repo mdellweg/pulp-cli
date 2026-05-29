@@ -12,6 +12,7 @@ from pulp_glue.common.authentication import (
     BasicAuthProvider,
     GlueAuthProvider,
 )
+from pulp_glue.common.cookie import Cookie
 from pulp_glue.common.exceptions import ValidationError
 from pulp_glue.common.openapi import OpenAPI, _Request, _Response
 
@@ -322,12 +323,14 @@ def test_extract_cookies(
         ),
         body=b"",
     )
-    cookies = mock_openapi._extract_cookies(response)
-    assert len(cookies) == 2
-    # TODO: Do we need to care about the other cookie attributes too?
-    assert cookies == {
-        "csrftoken": "C3gBQ0SMgEJR6FCMUpy3Hf3iXfhkA17B",
-        "sessionid": "1kj1jdpk750wvff7yrda30pa07tzqr4a",
+    mock_openapi._extract_cookies(response)
+    assert mock_openapi._cookiejar == {
+        "csrftoken": Cookie(
+            name="csrftoken", value="C3gBQ0SMgEJR6FCMUpy3Hf3iXfhkA17B", expires=datetime.datetime(2027, 5, 26, 13, 22, 50, tzinfo=datetime.timezone.utc)
+        ),
+        "sessionid": Cookie(
+            name="sessionid", value="1kj1jdpk750wvff7yrda30pa07tzqr4a", expires=datetime.datetime(2026, 6, 10, 13, 22, 50, tzinfo=datetime.timezone.utc)
+        ),
     }
 
 
