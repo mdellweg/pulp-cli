@@ -7,7 +7,7 @@ import typing as t
 import warnings
 from base64 import b64encode
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from functools import cached_property
 from io import BufferedReader
 from pathlib import Path
@@ -15,12 +15,11 @@ from urllib.parse import urlencode, urljoin
 
 import requests
 import urllib3
-from multidict import CIMultiDict, CIMultiDictProxy, MutableMultiMapping
+from multidict import CIMultiDict, CIMultiDictProxy
 from requests.auth import AuthBase
 
 from pulp_glue.common import __version__, oas
 from pulp_glue.common.authentication import AuthProviderBase
-from pulp_glue.common.cookie import Cookie, cookiejar_adapter
 from pulp_glue.common.exceptions import (
     OpenAPIError,
     PulpAuthenticationFailed,
@@ -54,7 +53,7 @@ METHODS: set[oas.OperationName] = {
     "patch",
     "trace",
 }
-SAFE_METHODS: set[oas.OperationName] = {"get", "head", "options"}
+SAFE_METHODS: set[oas.OperationName] = {"get", "head", "options", "trace"}
 
 
 @dataclass
@@ -62,9 +61,7 @@ class _Request:
     operation_id: str
     method: str
     url: str
-    headers: MutableMultiMapping[str] | CIMultiDict[str] | t.MutableMapping[str, str] = field(
-        default_factory=CIMultiDict
-    )
+    headers: CIMultiDict[str] = field(default_factory=CIMultiDict)
 
     cookies: dict[str, str] = field(default_factory=dict)
     params: dict[str, str] = field(default_factory=dict)
@@ -76,7 +73,7 @@ class _Request:
 @dataclass
 class _Response:
     status_code: int
-    headers: MutableMultiMapping[str] | CIMultiDictProxy[str]
+    headers: CIMultiDict[str]
     body: bytes
 
 
@@ -166,9 +163,6 @@ class OpenAPI:
         if cid:
             self._headers["Correlation-Id"] = cid
 
-        self._cookiejar: dict[str, Cookie] = {}
-
-        self._load_cookies()
         self._setup_session()
 
         self._oauth2_lock = asyncio.Lock()
@@ -226,36 +220,6 @@ class OpenAPI:
             if self._auth_provider is not None and self._auth_provider.can_complete_mutualTLS():
                 _ssl_context.load_cert_chain(*self._auth_provider.tls_credentials())
         return _ssl_context
-
-    def _expire_cookies(self) -> None:
-        now = datetime.now(timezone.utc)
-        for name, c in self._cookiejar.items():
-            print(now)
-            print(c.expires)
-            if c.expires is not None and c.expires < now:
-                self._cookiejar.pop(name)
-
-    def _load_cookies(self) -> None:
-        if (xdg_runtime_dir := os.environ.get("XDG_RUNTIME_DIR")) is not None:
-            cookiejar = os.path.join(xdg_runtime_dir, "pulp_cookiejar")
-            try:
-                with open(cookiejar, "rb") as f:
-                    cookies = cookiejar_adapter.validate_json(f.read())
-
-                    for c in cookies:
-                        self._cookiejar[c.name] = c
-            except (IOError, ValueError):
-                pass
-
-    def _store_cookies(self) -> None:
-        if (xdg_runtime_dir := os.environ.get("XDG_RUNTIME_DIR")) is not None:
-            cookiejar = os.path.join(xdg_runtime_dir, "pulp_cookiejar")
-            try:
-                with open(cookiejar, "wb") as f:
-                    cookies = [c for c in self._cookiejar.values() if c.name != "csrftoken"]
-                    f.write(cookiejar_adapter.dump_json(cookies))
-            except (IOError, ValueError):
-                pass
 
     def load_api(self, refresh_cache: bool = False) -> None:
         # TODO: Find a way to invalidate caches on upstream change
@@ -616,13 +580,17 @@ class OpenAPI:
                 else:
                     raise NotImplementedError("Auth scheme: http " + security_scheme.scheme)
             elif isinstance(security_scheme, oas.SecuritySchemeApiKey):
-                api_key = await self._auth_provider.api_key_credentials()
+                api_key = await self._auth_provider.api_key_credentials(security_scheme)
                 if security_scheme.in_ == "query":
                     request.params[security_scheme.name] = api_key
                 elif security_scheme.in_ == "header":
                     request.headers[security_scheme.name] = api_key
                 elif security_scheme.in_ == "cookie":
                     request.cookies[security_scheme.name] = api_key
+                    csrftoken = self._auth_provider.csrftoken()
+                    request.cookies["csrftoken"] = csrftoken
+                    if request.method not in SAFE_METHODS:
+                        request.headers["X-CSRFToken"] = csrftoken
 
             elif isinstance(security_scheme, oas.SecuritySchemeOAuth2):
                 flow = security_scheme.flows.client_credentials
@@ -657,7 +625,7 @@ class OpenAPI:
                     operation_id="",
                     method="post",
                     url=flow.token_url,
-                    headers={"Authorization": f"Basic {secret.decode()}"},
+                    headers=CIMultiDict({"Authorization": f"Basic {secret.decode()}"}),
                     data=data,
                 )
                 response = self._send_request(request)
@@ -710,22 +678,6 @@ class OpenAPI:
             self._debug_callback(2, f"  {key}: {value}")
         if response.body:
             self._debug_callback(3, f"{response.body!r}")
-
-    def _extract_cookies(self, response: _Response) -> None:
-        # Do not save the csrf cookie to disk.
-        changed = False
-        for ch in response.headers.getall("set-cookie", []):
-            c = Cookie.from_header(ch)
-            old_c = self._cookiejar.get(c.name)
-            if c.value == "":
-                if old_c is not None:
-                    self._cookiejar.pop(c.name)
-                    changed |= (c.name != "csrftoken")
-            elif c != old_c:
-                self._cookiejar[c.name] = c
-                changed |= (c.name != "csrftoken")
-        if changed:
-            self._store_cookies()
 
     def _parse_response(self, operation_spec: oas.Operation, response: _Response) -> t.Any:
         if "Correlation-Id" in response.headers:
@@ -791,8 +743,6 @@ class OpenAPI:
 
             NotImplementedError: well, the name really says is all.
         """
-        self._expire_cookies()
-
         method, path = self.operations[operation_id]
         path_spec = self._api_spec.paths[path]
         operation_spec = getattr(path_spec, method)
@@ -834,11 +784,13 @@ class OpenAPI:
         response = self._send_request(request)
 
         if self._auth_provider is not None:
+            asyncio.run(self._auth_provider.response_headers_hook(response.headers))
             if may_retry and response.status_code == 401:
                 assert proposal is not None
                 self._oauth2_token = None
                 asyncio.run(self._authenticate_request(request, proposal))
                 response = self._send_request(request)
+                asyncio.run(self._auth_provider.response_headers_hook(response.headers))
 
             if response.status_code >= 200 and response.status_code < 300:
                 asyncio.run(self._auth_provider.auth_success_hook())
@@ -846,5 +798,4 @@ class OpenAPI:
                 asyncio.run(self._auth_provider.auth_failure_hook())
 
         self._log_response(response)
-        self._extract_cookies(response)
         return self._parse_response(operation_spec, response)

@@ -12,7 +12,6 @@ from pulp_glue.common.authentication import (
     BasicAuthProvider,
     GlueAuthProvider,
 )
-from pulp_glue.common.cookie import Cookie
 from pulp_glue.common.exceptions import ValidationError
 from pulp_glue.common.openapi import OpenAPI, _Request, _Response
 
@@ -301,37 +300,6 @@ class TestParseResponse:
         result = mock_openapi._parse_response(operation_spec, response)
 
         assert result == {"a": 1, "b": "Hallo!"}
-
-
-def test_extract_cookies(
-    mock_openapi: OpenAPI,
-) -> None:
-    response = _Response(
-        200,
-        headers=CIMultiDict(
-            (
-                ("content-type", "text/plain"),
-                (
-                    "set-cookie",
-                    "csrftoken=C3gBQ0SMgEJR6FCMUpy3Hf3iXfhkA17B; expires=Wed, 26 May 2027 13:22:50 GMT; Max-Age=31449600; Path=/; SameSite=Lax",
-                ),
-                (
-                    "set-cookie",
-                    "sessionid=1kj1jdpk750wvff7yrda30pa07tzqr4a; expires=Wed, 10 Jun 2026 13:22:50 GMT; HttpOnly; Max-Age=1209600; Path=/; SameSite=Lax",
-                ),
-            )
-        ),
-        body=b"",
-    )
-    mock_openapi._extract_cookies(response)
-    assert mock_openapi._cookiejar == {
-        "csrftoken": Cookie(
-            name="csrftoken", value="C3gBQ0SMgEJR6FCMUpy3Hf3iXfhkA17B", expires=datetime.datetime(2027, 5, 26, 13, 22, 50, tzinfo=datetime.timezone.utc)
-        ),
-        "sessionid": Cookie(
-            name="sessionid", value="1kj1jdpk750wvff7yrda30pa07tzqr4a", expires=datetime.datetime(2026, 6, 10, 13, 22, 50, tzinfo=datetime.timezone.utc)
-        ),
-    }
 
 
 class TestRenderParameters:

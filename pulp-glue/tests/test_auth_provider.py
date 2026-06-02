@@ -1,6 +1,9 @@
 import asyncio
+import pathlib
+from datetime import datetime, timezone
 
 import pytest
+from multidict import CIMultiDict
 from pydantic.type_adapter import TypeAdapter
 
 from pulp_glue.common import oas
@@ -9,6 +12,7 @@ from pulp_glue.common.authentication import (
     BasicAuthProvider,
     GlueAuthProvider,
 )
+from pulp_glue.common.cookie import Cookie
 
 pytestmark = pytest.mark.glue
 
@@ -107,8 +111,10 @@ class TestGlueAuthProvider:
 
     def test_can_complete_api_key(self) -> None:
         provider = GlueAuthProvider(api_key="test_api_key_123")
+        scheme = SECURITY_SCHEMES["F"]
+        assert isinstance(scheme, oas.SecuritySchemeApiKey)
         assert provider.can_complete({"F": []}, security_schemes=SECURITY_SCHEMES)
-        assert asyncio.run(provider.api_key_credentials()) == "test_api_key_123"
+        assert asyncio.run(provider.api_key_credentials(scheme)) == "test_api_key_123"
 
     def test_client_id_needs_client_secret(self) -> None:
         with pytest.raises(AssertionError):
@@ -126,3 +132,42 @@ class TestGlueAuthProvider:
         provider = GlueAuthProvider(cert="FAKECERTIFICATE")
         assert provider.can_complete_mutualTLS() == 0
         assert provider.tls_credentials() == ("FAKECERTIFICATE", None)
+
+    def test_extracts_cookies(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: pathlib.Path
+    ) -> None:
+        monkeypatch.setenv("XDG_RUNTIME_DIR", str(tmp_path / "run"))
+        provider = GlueAuthProvider()
+        headers = CIMultiDict(
+            (
+                ("content-type", "text/plain"),
+                (
+                    "set-cookie",
+                    "csrftoken=C3gBQ0SMgEJR6FCMUpy3Hf3iXfhkA17B; expires=Wed, 26 May 2027 13:22:50 GMT; Max-Age=31449600; Path=/; SameSite=Lax",
+                ),
+                (
+                    "set-cookie",
+                    "sessionid=1kj1jdpk750wvff7yrda30pa07tzqr4a; expires=Wed, 10 Jun 2026 13:22:50 GMT; HttpOnly; Max-Age=1209600; Path=/; SameSite=Lax",
+                ),
+            )
+        )
+        asyncio.run(provider.response_headers_hook(headers))
+
+        assert provider._cookiejar == {
+            "csrftoken": Cookie(
+                name="csrftoken",
+                value="C3gBQ0SMgEJR6FCMUpy3Hf3iXfhkA17B",
+                expires=datetime(2027, 5, 26, 13, 22, 50, tzinfo=timezone.utc),
+                http_only=False,
+                same_site="Lax",
+                path="/",
+            ),
+            "sessionid": Cookie(
+                name="sessionid",
+                value="1kj1jdpk750wvff7yrda30pa07tzqr4a",
+                expires=datetime(2026, 6, 10, 13, 22, 50, tzinfo=timezone.utc),
+                http_only=True,
+                same_site="Lax",
+                path="/",
+            ),
+        }
