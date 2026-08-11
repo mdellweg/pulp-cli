@@ -255,8 +255,17 @@ class PulpContextConfig(BaseModel):
     background_tasks: bool = False
     timeout: int | datetime.timedelta = 300
     chunk_size: int | None = None
+    dry_run: bool = False
     fake_mode: bool = False
     verify_ssl: bool | str | None = Field(default=None, validation_alias="verify")
+    headers: list[str] = []  # Validate
+    # -- auth --
+    username: str | None = None
+    password: str | None = None
+    client_id: str | None = None
+    client_secret: str | None = None
+    cert: str | None = None
+    key: str | None = None
 
 
 class PulpContext:
